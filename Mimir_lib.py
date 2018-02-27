@@ -1,21 +1,22 @@
 from PIL import Image
 import numpy
 import nibabel
+from pprint import pprint
 
 class Fd_data:
 
     def __init__(self, path):
-        self.img = nibabel.load(file)
-        self.data = img.get_data()
-        self.header = img.get_header()
-        self.contrast_min = data.min()
-        self.contrast_max = data.max()
+        self.img = nibabel.load(path)
+        self.data = self.img.get_data()
+        self.header = self.img.get_header()
+        self.contrast_min = self.data.min()
+        self.contrast_max = self.data.max()
 
     def _get_contrast_min(self):
-        return contrast_min
+        return self.contrast_min
 
     def _get_contrast_max(self):
-        return contrast_max
+        return self.contrast_max
 
     def get_slice(self, plane_nb, slice_nb, contrast_min, contrast_max):
         # the slice(None) index will take an entire dimension, so using 2 of them and a number will reduce the
@@ -25,7 +26,7 @@ class Fd_data:
         slice_range = tuple(slice_range)
     
         # after the 2D plane has been extracted, the contrast must be changed according to the contrast sliders' values
-        plane = numpy.copy(self.data)
+        plane = numpy.copy(self.data[slice_range])
         plane[plane < contrast_min] = contrast_min
         plane[plane > contrast_max] = contrast_max
 
