@@ -11,19 +11,27 @@ class Fd_data:
         self.header = self.img.get_header()
         self.contrast_min = self.data.min()
         self.contrast_max = self.data.max()
+        self.shape = self.data.shape
+        pprint(self.shape)
 
     def _get_contrast_min(self):
         return self.contrast_min
 
     def _get_contrast_max(self):
         return self.contrast_max
+    
+    def _get_shape(self):
+        return self.shape
 
-    def get_slice(self, plane_nb, slice_nb, contrast_min, contrast_max):
+    def get_slice(self, img_nb, plane_nb, slice_nb, contrast_min, contrast_max):
         # the slice(None) index will take an entire dimension, so using 2 of them and a number will reduce the
         # dimensions of the original array by one if the image is 3D
         slice_range = [slice(None)] * 3
         slice_range[plane_nb] = slice_nb
         slice_range = tuple(slice_range)
+
+        # if the original image is 4D, we need to further reduce the number of dimensions by selecting a 3D image
+        if len(self.shape) == 4: slice_range = slice_range + (img_nb,)
     
         # after the 2D plane has been extracted, the contrast must be changed according to the contrast sliders' values
         plane = numpy.copy(self.data[slice_range])
