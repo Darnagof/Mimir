@@ -16,6 +16,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.axial_slice = None
         self.sagittal_slice = None
         self.coronal_slice = None
+        self.lastUsedPath = os.path.dirname(os.path.abspath(__file__))
 
         # Interface initialization
         self.setupUi(self)
@@ -28,24 +29,27 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.coronal_save_slice.setEnabled(False)
 
     def openFile(self):
-        image_path = QFileDialog.getOpenFileName(parent=self, directory=os.path.expanduser('~'), filter='*.nii *.nii.gz')
+        image_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.nii *.nii.gz')
         if not os.path.isfile(image_path[0]): return
         self.image_file = Mimir_lib.Fd_data(image_path[0])
+        self.lastUsedPath = os.path.dirname(image_path[0])
+        self.filename = os.path.basename(image_path[0])
+        self.filename = os.path.splitext(self.filename)[0]
 
         # Axial
-        self.axial_slice = self.image_file.get_slice(0, 156, self.image_file.contrast_min, self.image_file.contrast_max)
+        self.axial_slice = self.image_file.get_slice(0, 0, 156, self.image_file.contrast_min, self.image_file.contrast_max)
         pixmap = self.axial_slice.toqpixmap()
         self.scene = QGraphicsScene(0, 0, pixmap.width(), pixmap.height())
         self.scene.addPixmap(pixmap)
         self.axial_slice_viewer.setScene(self.scene)
         # Sagittal
-        self.sagittal_slice = self.image_file.get_slice(1, 156, self.image_file.contrast_min, self.image_file.contrast_max)
+        self.sagittal_slice = self.image_file.get_slice(0, 1, 156, self.image_file.contrast_min, self.image_file.contrast_max)
         pixmap = self.sagittal_slice.toqpixmap()
         self.scene = QGraphicsScene(0, 0, pixmap.width(), pixmap.height())
         self.scene.addPixmap(pixmap)
         self.sagittal_slice_viewer.setScene(self.scene)
         # Coronal
-        self.coronal_slice = self.image_file.get_slice(2, 12, self.image_file.contrast_min, self.image_file.contrast_max)
+        self.coronal_slice = self.image_file.get_slice(0, 2, 12, self.image_file.contrast_min, self.image_file.contrast_max)
         pixmap = self.coronal_slice.toqpixmap()
         self.scene = QGraphicsScene(0, 0, pixmap.width(), pixmap.height())
         self.scene.addPixmap(pixmap)
@@ -57,7 +61,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.coronal_save_slice.setEnabled(True)
 
     def saveSlice(self, slice):
-        save_path = QFileDialog.getSaveFileName(parent=self, directory=os.path.expanduser('~'), filter='*.png')
+        save_path = QFileDialog.getSaveFileName(parent=self, directory=self.lastUsedPath+'/'+self.filename, filter='*.png')
         if save_path[0] == '': return
         Mimir_lib.save_slice(slice, save_path[0])
 
