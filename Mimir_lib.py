@@ -1,7 +1,7 @@
 from PIL import Image
 import numpy
 import nibabel
-from pprint import pprint
+from matplotlib import cm
 
 class Fd_data:
 
@@ -12,7 +12,6 @@ class Fd_data:
         self.contrast_min = self.data.min()
         self.contrast_max = self.data.max()
         self.shape = self.data.shape
-        pprint(self.shape)
 
     def _get_contrast_min(self):
         return self.contrast_min
@@ -53,6 +52,15 @@ class Fd_data:
         image = image.resize((new_width, new_height))
 
         return image
+
+def colormap(image, color):
+    cmap = cm.get_cmap(color)
+    img = image.convert('L')
+    img = numpy.array(img)
+    img = cmap(img)
+    img = numpy.uint8(img * 255)
+    img = Image.fromarray(img)
+    return img
 
 def save_slice(image, save_path):
     # python-pillow can load any kind of image and save it in any common format
