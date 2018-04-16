@@ -39,8 +39,8 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.axial_slice_slider.setEnabled(False)
         self.sagittal_slice_slider.setEnabled(False)
         self.coronal_slice_slider.setEnabled(False)
-        self.horizontalSlider.setEnabled(False)
-        self.horizontalSlider.valueChanged.connect(self.drawAllViewers)
+        self.cycle_slider.setEnabled(False)
+        self.cycle_slider.valueChanged.connect(self.drawAllViewers)
         self.max_contrast_slider.setEnabled(False)
         self.max_contrast_slider.valueChanged.connect(self.drawAllViewers)
         self.min_contrast_slider.setEnabled(False)
@@ -69,8 +69,8 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.min_contrast_slider.setValue(self.image_file.contrast_min)
 
         if len(self.image_file.shape) == 4:
-            self.horizontalSlider.setMaximum(self.image_file.shape[3] - 1)
-            self.horizontalSlider.setEnabled(True)
+            self.cycle_slider.setMaximum(self.image_file.shape[3] - 1)
+            self.cycle_slider.setEnabled(True)
 
         for i in range(3):
             self.slice_sliders[i].setMaximum(self.image_file.shape[i] - 1)
@@ -95,7 +95,9 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.color_map = self.comboBox.currentText()
         self.contrast_min = self.min_contrast_slider.value()
         self.contrast_max = self.max_contrast_slider.value()
-        self.cycle = self.horizontalSlider.value()
+        self.cycle = self.cycle_slider.value()
+        self.cycle_nb_label.setText(str(self.cycle) + "/" + str(self.cycle_slider.maximum()))
+        self.contrast_nb_label.setText(str(self.contrast_min) + "|" + str(self.contrast_max))
         for i in range(3):
             self.drawViewer(self.slice_viewers[i], i, self.slice_sliders[i].value())
 

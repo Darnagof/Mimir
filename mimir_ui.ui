@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>817</width>
-    <height>589</height>
+    <width>810</width>
+    <height>577</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -146,6 +146,12 @@
         <property name="spacing">
          <number>1</number>
         </property>
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QGraphicsView" name="sagittal_slice_viewer"/>
         </item>
@@ -215,20 +221,56 @@
          <number>70</number>
         </property>
         <item>
-         <widget class="QLabel" name="label_3">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
+         <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>Cycle</string>
+           <string>Mode</string>
           </property>
          </widget>
         </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QRadioButton" name="mask_mode_button">
+            <property name="text">
+             <string>Mask</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="marker_mode_button">
+            <property name="text">
+             <string>Marker</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Cycle: </string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="cycle_nb_label">
+            <property name="text">
+             <string>0 / 0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item alignment="Qt::AlignHCenter">
-         <widget class="QSlider" name="horizontalSlider">
+         <widget class="QSlider" name="cycle_slider">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -267,6 +309,30 @@
            </size>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_6">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Contrast min|max: </string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="contrast_nb_label">
+            <property name="text">
+             <string>0|0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item alignment="Qt::AlignVCenter">
          <widget class="QLabel" name="label_2">
@@ -331,7 +397,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>817</width>
+     <width>810</width>
      <height>21</height>
     </rect>
    </property>
