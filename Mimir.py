@@ -9,6 +9,7 @@ import nibabel
 import numpy
 from PIL import Image
 from matplotlib import pyplot
+from CursorGraphicsView import CursorGraphicsView
 
 
 class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
@@ -21,37 +22,47 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.color_map = None
         self.contrast_min = None
         self.contrast_max = None
+        self.one_percent_contrast = 0.0
         self.cycle = 0
         self.lastUsedPath = os.path.dirname(os.path.abspath(__file__))
         self.slices = {0:self.sagittal_slice, 1:self.coronal_slice, 2:self.axial_slice}
 
         # Interface initialization
         self.setupUi(self)
-        self.slice_viewers = {0:self.sagittal_slice_viewer, 1:self.coronal_slice_viewer, 2:self.axial_slice_viewer}
-        self.slice_sliders = {0:self.sagittal_slice_slider, 1:self.coronal_slice_slider, 2:self.axial_slice_slider}
+        self.slice_viewers = [self.sagittal_slice_viewer, self.coronal_slice_viewer, self.axial_slice_viewer]
+        self.slice_sliders = [self.sagittal_slice_slider, self.coronal_slice_slider, self.axial_slice_slider]
         self.actionOpen.triggered.connect(self.openFile)
+        # --- Screenshot buttons
         self.axial_save_slice.clicked.connect(lambda: self.saveSlice(2))
         self.sagittal_save_slice.clicked.connect(lambda: self.saveSlice(0))
         self.coronal_save_slice.clicked.connect(lambda: self.saveSlice(1))
         self.axial_save_slice.setEnabled(False)
         self.sagittal_save_slice.setEnabled(False)
         self.coronal_save_slice.setEnabled(False)
+        # --- Slice sliders
         self.axial_slice_slider.setEnabled(False)
         self.sagittal_slice_slider.setEnabled(False)
         self.coronal_slice_slider.setEnabled(False)
+        for i in range(3):
+            self.slice_sliders[i].valueChanged.connect(lambda value, i=i: self.drawViewer(self.slice_viewers[i], i, self.slice_sliders[i].value()))
+        # --- Cycle and contrast sliders
         self.cycle_slider.setEnabled(False)
         self.cycle_slider.valueChanged.connect(self.drawAllViewers)
         self.max_contrast_slider.setEnabled(False)
         self.max_contrast_slider.valueChanged.connect(self.drawAllViewers)
         self.min_contrast_slider.setEnabled(False)
         self.min_contrast_slider.valueChanged.connect(self.drawAllViewers)
+        # --- Colormaps list
         colormaps = pyplot.colormaps()
         colormaps.insert(0, "")
         self.comboBox.setEnabled(False)
         self.comboBox.addItems(colormaps)
         self.comboBox.currentIndexChanged.connect(self.drawAllViewers)
-        for i in range(3):
-            self.slice_sliders[i].valueChanged.connect(lambda value, i=i: self.drawViewer(self.slice_viewers[i], i, self.slice_sliders[i].value()))
+        # --- Slice viewers
+        for i, viewer in enumerate(self.slice_viewers):
+            viewer.set_num(i)
+            viewer.set_viewers(self.slice_viewers)
+            viewer.set_sliders(self.slice_sliders)
 
     def openFile(self):
         image_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.nii *.nii.gz')
@@ -67,6 +78,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.min_contrast_slider.setMaximum(self.image_file.contrast_max)
         self.min_contrast_slider.setMinimum(self.image_file.contrast_min)
         self.min_contrast_slider.setValue(self.image_file.contrast_min)
+        self.one_percent_contrast = 1/(self.image_file.contrast_max - self.image_file.contrast_min)*100
 
         if len(self.image_file.shape) == 4:
             self.cycle_slider.setMaximum(self.image_file.shape[3] - 1)
@@ -92,16 +104,18 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         Mimir_lib.save_slice(self.slices[num_type], save_path[0])
 
     def drawAllViewers(self):
+        for i in range(3):
+            self.drawViewer(self.slice_viewers[i], i, self.slice_sliders[i].value())
+
+    def drawViewer(self, viewer, num_type, num_slice):
         self.color_map = self.comboBox.currentText()
         self.contrast_min = self.min_contrast_slider.value()
         self.contrast_max = self.max_contrast_slider.value()
         self.cycle = self.cycle_slider.value()
         self.cycle_nb_label.setText(str(self.cycle) + "/" + str(self.cycle_slider.maximum()))
-        self.contrast_nb_label.setText(str(self.contrast_min) + "|" + str(self.contrast_max))
-        for i in range(3):
-            self.drawViewer(self.slice_viewers[i], i, self.slice_sliders[i].value())
-
-    def drawViewer(self, viewer, num_type, num_slice):
+        contrast_min_percent = round((self.contrast_min-self.min_contrast_slider.minimum())/(self.min_contrast_slider.maximum()-self.min_contrast_slider.minimum())*100, 2)
+        contrast_max_percent = round((self.contrast_max-self.max_contrast_slider.minimum())/(self.max_contrast_slider.maximum()-self.max_contrast_slider.minimum())*100, 2)
+        self.contrast_nb_label.setText(str(contrast_min_percent) + "% | " + str(contrast_max_percent) + "%")
         self.slices[num_type] = self.image_file.get_slice(self.cycle, num_type, num_slice, self.contrast_min, self.contrast_max)
         if self.color_map:
             self.slices[num_type] = Mimir_lib.colormap(self.slices[num_type], self.color_map)
@@ -109,6 +123,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         scene = QGraphicsScene(0, 0, pixmap.width(), pixmap.height())
         scene.addPixmap(pixmap)
         viewer.setScene(scene)
+        viewer.make_cursor()
 
 
 def main():

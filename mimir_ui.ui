@@ -20,6 +20,9 @@
     </property>
     <item>
      <layout class="QGridLayout" name="windows">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
       <property name="spacing">
        <number>1</number>
       </property>
@@ -29,7 +32,7 @@
          <number>1</number>
         </property>
         <item>
-         <widget class="QGraphicsView" name="axial_slice_viewer"/>
+         <widget class="CursorGraphicsView" name="axial_slice_viewer"/>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -88,7 +91,7 @@
          <number>1</number>
         </property>
         <item>
-         <widget class="QGraphicsView" name="coronal_slice_viewer"/>
+         <widget class="CursorGraphicsView" name="coronal_slice_viewer"/>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -153,7 +156,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QGraphicsView" name="sagittal_slice_viewer"/>
+         <widget class="CursorGraphicsView" name="sagittal_slice_viewer"/>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -321,14 +324,14 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Contrast min|max: </string>
+             <string>Contrast min | max: </string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="contrast_nb_label">
             <property name="text">
-             <string>0|0</string>
+             <string>0% | 0%</string>
             </property>
            </widget>
           </item>
@@ -415,6 +418,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CursorGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>CursorGraphicsView.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
