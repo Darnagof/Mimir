@@ -3,22 +3,20 @@ from math import floor
 from PyQt5.QtCore import QPointF
 from PyQt5.QtGui import QColor, QPen
 from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsLineItem, QGraphicsView
+import Mimir_lib
 
 
 class CursorGraphicsView(QGraphicsView):
-    coords = None
 
     def __init__(self, *__args):
         super().__init__(*__args)
         self.num = -1
-        self.scale = QPointF(1, 1)
+        self.scale = (1, 1)
 
     def mouseReleaseEvent(self, event):
         if not self.scene(): return
 
         # the event's position is relative to the CursorGraphicsView, but we need it relative to the image
-        # pos_x = event.x() - (self.width() - self.scene().width() - 1) / 2
-        # pos_y = event.y() - (self.height() - self.scene().height() - 1) / 2
         point = self.mapToScene(event.pos())
         pos_x = point.x()
         pos_y = point.y()
@@ -27,14 +25,19 @@ class CursorGraphicsView(QGraphicsView):
         # position in the image, and then update all CursorGraphicsViews to show the corresponding slice as well as a
         # cursor pointing at the clicked voxel
         if pos_x >= 0 and pos_x < self.scene().width() and pos_y >= 0 and pos_y < self.scene().height():
-            slider_values = [floor(pos_x / self.scale.x()), floor((self.scene().height() - pos_y) / self.scale.y())]
-            CursorGraphicsView.coords = self.get_coords(slider_values)
+            slider_values = [floor(pos_x / self.scale[0]), floor((self.scene().height() - pos_y) / self.scale[1])]
+            self.coords = self.get_coords(slider_values)
 
             for i, slider in enumerate(self.sliders): slider.setValue(self.coords[i])
             for viewer in self.viewers: viewer.show_cursor(self.coords)
-
+        if(self.mode_buttons[1].isChecked()):
+            self.fd_data.add_point_to_mask(0, self.coords)
+    
     def set_num(self, num: int):
         self.num = num
+
+    def set_coords(self, coords):
+        self.coords = coords
 
     def set_scale(self, scale: float):
         self.scale = scale
@@ -44,6 +47,15 @@ class CursorGraphicsView(QGraphicsView):
 
     def set_sliders(self, sliders):
         self.sliders = sliders
+
+    def set_mode_buttons(self, buttons):
+        self.mode_buttons = buttons
+
+    def set_fd_data(self, fd_data):
+        self.fd_data = fd_data
+
+    def set_cycle_slider(self, cycle_slider):
+        self.cycle_slider = cycle_slider
 
     def get_coords(self, pos):
         return [(s.value() if i == self.num else pos.pop(0)) for i, s in enumerate(self.sliders)]
@@ -69,4 +81,4 @@ class CursorGraphicsView(QGraphicsView):
         pos.pop(self.num)
 
         self.point_cursor.setVisible(True)
-        self.point_cursor.setPos(pos[0] * self.scale.x(), self.scene().height() - pos[1] * self.scale.y())
+        self.point_cursor.setPos(pos[0] * self.scale[0], self.scene().height() - pos[1] * self.scale[1])

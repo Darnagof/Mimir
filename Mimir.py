@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QAction, QGraphicsScene
 from PyQt5.QtGui import QTransform
 from PyQt5.QtCore import QPointF
+from PyQt5 import QtCore
 import sys
 import mimir_ui
 import os
@@ -26,6 +27,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.cycle = 0
         self.lastUsedPath = os.path.dirname(os.path.abspath(__file__))
         self.slices = {0:self.sagittal_slice, 1:self.coronal_slice, 2:self.axial_slice}
+        self.clickedCoords = [0, 0, 0]
 
         # Interface initialization
         self.setupUi(self)
@@ -58,11 +60,17 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.comboBox.setEnabled(False)
         self.comboBox.addItems(colormaps)
         self.comboBox.currentIndexChanged.connect(self.drawAllViewers)
+        # --- Mode radiobuttons
+        self.mode_buttons = [self.marker_mode_button, self.mask_mode_button]
+        self.marker_mode_button.setChecked(True)
         # --- Slice viewers
         for i, viewer in enumerate(self.slice_viewers):
             viewer.set_num(i)
             viewer.set_viewers(self.slice_viewers)
             viewer.set_sliders(self.slice_sliders)
+            viewer.set_mode_buttons(self.mode_buttons)
+            viewer.set_cycle_slider(self.cycle_slider)
+            viewer.set_coords(self.clickedCoords)
 
     def openFile(self):
         image_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.nii *.nii.gz')
@@ -97,6 +105,9 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.coronal_slice_slider.setEnabled(True)
         self.max_contrast_slider.setEnabled(True)
         self.min_contrast_slider.setEnabled(True)
+        # --- Slice viewers
+        for i, viewer in enumerate(self.slice_viewers):
+            viewer.set_fd_data(self.image_file)
 
     def saveSlice(self, num_type):
         save_path = QFileDialog.getSaveFileName(parent=self, directory=self.lastUsedPath+'/'+self.filename, filter='*.png')
@@ -116,15 +127,20 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         contrast_min_percent = round((self.contrast_min-self.min_contrast_slider.minimum())/(self.min_contrast_slider.maximum()-self.min_contrast_slider.minimum())*100, 2)
         contrast_max_percent = round((self.contrast_max-self.max_contrast_slider.minimum())/(self.max_contrast_slider.maximum()-self.max_contrast_slider.minimum())*100, 2)
         self.contrast_nb_label.setText(str(contrast_min_percent) + "% | " + str(contrast_max_percent) + "%")
-        self.slices[num_type] = self.image_file.get_slice(self.cycle, num_type, num_slice, self.contrast_min, self.contrast_max)
+        self.slices[num_type], scale = self.image_file.get_slice(self.cycle, num_type, num_slice, self.contrast_min, self.contrast_max)
         if self.color_map:
             self.slices[num_type] = Mimir_lib.colormap(self.slices[num_type], self.color_map)
         pixmap = self.slices[num_type].toqpixmap()
         scene = QGraphicsScene(0, 0, pixmap.width(), pixmap.height())
         scene.addPixmap(pixmap)
         viewer.setScene(scene)
+        viewer.set_scale(scale)
         viewer.make_cursor()
 
+    def keyReleaseEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Space:
+            self.image_file.add_point([self.slice_sliders[0].value(), self.slice_sliders[1].value(), self.slice_sliders[2].value(), self.cycle])
+            print("Add point: " + str([self.slice_sliders[0].value(), self.slice_sliders[1].value(), self.slice_sliders[2].value(), self.cycle]))
 
 def main():
     app = QApplication(sys.argv)
