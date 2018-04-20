@@ -25,7 +25,7 @@ class Fd_data:
     def _get_shape(self):
         return self.shape
 
-    def get_slice(self, img_nb, plane_nb, slice_nb, contrast_min, contrast_max):
+    def get_slice(self, img_nb, plane_nb, slice_nb, contrast_min, contrast_max, colormap):
         # the slice(None) index will take an entire dimension, so using 2 of them and a number will reduce the
         # dimensions of the original array by one if the image is 3D
         slice_range = [slice(None)] * 3
@@ -47,6 +47,8 @@ class Fd_data:
         scales_indexes = [((x + plane_nb) % 3) + 1 for x in [1, 2]]
 
         image = Image.fromarray(converted)
+        if colormap:
+            image = set_colormap(image, colormap)
         image = self.__draw_points_masks(image, img_nb, plane_nb, slice_nb)
         image = image.rotate(90, expand=True)
         pixdim = self.header['pixdim']
@@ -107,7 +109,7 @@ class Fd_data:
             self.points.extend(l_points)
             self.masks.extend(l_masks)
 
-def colormap(image, color):
+def set_colormap(image, color):
     cmap = cm.get_cmap(color)
     img = image.convert('L')
     img = numpy.array(img)
