@@ -44,33 +44,15 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QTabWidget" name="tabWidget">
+         <widget class="QTabWidget" name="tabMenu">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
-          <widget class="QWidget" name="tab">
+          <widget class="QWidget" name="mainTab">
            <attribute name="title">
             <string>Main</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_6">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout">
-              <item>
-               <widget class="QRadioButton" name="mask_mode_button">
-                <property name="text">
-                 <string>Mask</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="marker_mode_button">
-                <property name="text">
-                 <string>Marker</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
@@ -214,13 +196,73 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_2">
+          <widget class="QWidget" name="pointsTab">
            <attribute name="title">
             <string>Points</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QListView" name="listView"/>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QPushButton" name="addPointBt">
+                <property name="text">
+                 <string>+</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="delPointBt">
+                <property name="text">
+                 <string>-</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="savePointsBt">
+                <property name="text">
+                 <string>Save points</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QListView" name="pointsList"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="masksTab">
+           <attribute name="title">
+            <string>Masks</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <widget class="QPushButton" name="addMaskBt">
+                <property name="text">
+                 <string>+</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="delMaskBt">
+                <property name="text">
+                 <string>-</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="saveMasksBt">
+                <property name="text">
+                 <string>Save masks</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QTableView" name="masksList"/>
             </item>
            </layout>
           </widget>
@@ -429,12 +471,91 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionClose"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_points_masks"/>
+    <addaction name="actionLoad_points_masks"/>
+   </widget>
+   <widget class="QMenu" name="menuPoint">
+    <property name="title">
+     <string>Point</string>
+    </property>
+    <addaction name="actionNew_point"/>
+    <addaction name="actionDelete_point"/>
+   </widget>
+   <widget class="QMenu" name="menuMask">
+    <property name="title">
+     <string>Mask</string>
+    </property>
+    <addaction name="actionNew_mask"/>
+    <addaction name="actionDelete_mask"/>
+   </widget>
+   <widget class="QMenu" name="menuScreenshot">
+    <property name="title">
+     <string>Screenshot</string>
+    </property>
+    <addaction name="actionSave_current_sagittal_slice"/>
+    <addaction name="actionSave_current_coronal_slice"/>
+    <addaction name="actionSave_current_axial_slice"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuPoint"/>
+   <addaction name="menuMask"/>
+   <addaction name="menuScreenshot"/>
   </widget>
   <action name="actionOpen">
    <property name="text">
     <string>Open</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actionNew_point">
+   <property name="text">
+    <string>New point</string>
+   </property>
+  </action>
+  <action name="actionDelete_point">
+   <property name="text">
+    <string>Delete point</string>
+   </property>
+  </action>
+  <action name="actionNew_mask">
+   <property name="text">
+    <string>New mask</string>
+   </property>
+  </action>
+  <action name="actionDelete_mask">
+   <property name="text">
+    <string>Delete mask</string>
+   </property>
+  </action>
+  <action name="actionSave_points_masks">
+   <property name="text">
+    <string>Save points/masks</string>
+   </property>
+  </action>
+  <action name="actionLoad_points_masks">
+   <property name="text">
+    <string>Load points/masks</string>
+   </property>
+  </action>
+  <action name="actionSave_current_sagittal_slice">
+   <property name="text">
+    <string>Save current sagittal slice</string>
+   </property>
+  </action>
+  <action name="actionSave_current_coronal_slice">
+   <property name="text">
+    <string>Save current coronal slice</string>
+   </property>
+  </action>
+  <action name="actionSave_current_axial_slice">
+   <property name="text">
+    <string>Save current axial slice</string>
    </property>
   </action>
  </widget>

@@ -104,7 +104,7 @@ class Fd_data:
             pickle.dump((self.points, self.masks), fp)
     
     def load_points_masks(self, load_path):
-        with open ('outfile', 'rb') as fp:
+        with open (load_path, 'rb') as fp:
             l_points, l_masks = pickle.load(fp)
             self.points.extend(l_points)
             self.masks.extend(l_masks)

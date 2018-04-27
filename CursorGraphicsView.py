@@ -26,18 +26,12 @@ class CursorGraphicsView(QGraphicsView):
         # cursor pointing at the clicked voxel
         if pos_x >= 0 and pos_x < self.scene().width() and pos_y >= 0 and pos_y < self.scene().height():
             slider_values = [floor(pos_x / self.scale[0]), floor((self.scene().height() - pos_y) / self.scale[1])]
-            self.coords = self.get_coords(slider_values)
+            coords = self.get_coords(slider_values)
+            for i, slider in enumerate(self.sliders): slider.setValue(coords[i])
+            for viewer in self.viewers: viewer.show_cursor(coords)
 
-            for i, slider in enumerate(self.sliders): slider.setValue(self.coords[i])
-            for viewer in self.viewers: viewer.show_cursor(self.coords)
-        if(self.mode_buttons[1].isChecked()):
-            self.fd_data.add_point_to_mask(0, self.coords)
-    
     def set_num(self, num: int):
         self.num = num
-
-    def set_coords(self, coords):
-        self.coords = coords
 
     def set_scale(self, scale: float):
         self.scale = scale
@@ -47,9 +41,6 @@ class CursorGraphicsView(QGraphicsView):
 
     def set_sliders(self, sliders):
         self.sliders = sliders
-
-    def set_mode_buttons(self, buttons):
-        self.mode_buttons = buttons
 
     def set_fd_data(self, fd_data):
         self.fd_data = fd_data
