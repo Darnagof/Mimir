@@ -12,7 +12,7 @@ from PIL import Image
 from matplotlib import pyplot
 from CursorGraphicsView import CursorGraphicsView
 
-
+## @brief GUI of Mímir
 class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     def __init__(self, parent=None):
         super(Mimir, self).__init__(parent)
@@ -71,6 +71,9 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         # Set most of UI to "not enabled"
         self.enableUi(False)
 
+    ## @brief Enable or disable most of UI elements.
+    # @details Enable or disable most of buttons or other elements for the user. It generaly depend if an image file is opended or not.
+    # @param state If true, enable most of UI elements, otherwise disable them.
     def enableUi(self, state: bool):
         # --- Menu bar
         # ------ File
@@ -100,6 +103,8 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         # --- Tabs (Main, Points and Masks)
         self.tabMenu.setEnabled(state)
 
+    ## @brief Open image file.
+    # @details Launche browser window to open an image file, then load the file in Mimir.
     def openFile(self):
         image_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.nii *.nii.gz')
         if not os.path.isfile(image_path[0]): return
@@ -131,21 +136,32 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         # First draw of images
         self.drawAllViewers()
 
+    ## @brief Close image file.
+    # @details Close image file then disable most of UI elements.
     def closeFile(self):
         del self.image_file
         self.enableUi(False)
         # self.clearViewers()
 
+    ## @brief Save a slice as image file.
+    # @details Save the current showed slice from a chosen view as image file (PNG)
+    # @param num_type Select the view from where the slice is saved (0:sagittal, 1:coronal, 1:axial).
     def saveSlice(self, num_type: int):
         save_path = QFileDialog.getSaveFileName(parent=self, directory=self.lastUsedPath+'/'+self.filename, filter='*.png')
         if save_path[0] == '': return
         Mimir_lib.save_slice(self.slices[num_type], save_path[0])
 
+    ## @brief Draw all viewers
+    # @details Draw all viewers according to the current coordinates
     def drawAllViewers(self):
         for i in range(3):
             self.drawViewer(self.slice_viewers[i], i, self.slice_sliders[i].value())
 
-    # Draw one CursorGraphicsView
+    ## @brief Draw one viewer
+    # @details Draw one viewer according to the current coordinates
+    # @param viewer
+    # @param num_type
+    # @param num_slice
     def drawViewer(self, viewer, num_type: int, num_slice: int):
         self.current_coords[num_type] = num_slice
         self.color_map = self.comboBox.currentText()
@@ -165,22 +181,32 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         viewer.make_cursor()
         #viewer.show_cursor()
 
+    ## @brief Clear all viewers
     def clearViewers(self):
         for viewer in self.slice_viewers:
             viewer.items.clear()
 
+    ## @brief Update list of user-created points
     def updatePointsList(self):
         str_points = []
         for point in self.image_file.points:
             str_points.append(str(point))
         self.points_model.setStringList(str_points)
 
+    ## @brief Add point into image file
+    # @details Add a point, then update points list and viewers.
+    # The point is not saved yet into the MIM file.
+    # @param coords 3D-coordinates of the point
+    # @param cycle
     def add_point(self, coords: list, cycle: int):
         self.image_file.add_point(coords + [cycle])
         print("Point added: " + str(coords + [cycle]))#DEBUG
         self.updatePointsList()
         self.drawAllViewers()
 
+    ## @brief Delete point
+    # @details Delete a point, then update points list and viewers.
+    # The point deletion is not saved yet into the MIM file.
     def delete_point(self):
         for selection in self.points_list.selectedIndexes():
             self.image_file.delete_point(selection.row())
@@ -188,24 +214,35 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.updatePointsList()
         self.drawAllViewers()
 
+    ## @brief Save points and masks
+    # @details Save current points and masks into a MIM file. All deleted items are lost.
     def savePointsMasks(self):
         save_path = QFileDialog.getSaveFileName(parent=self, directory=self.lastUsedPath+'/'+self.filename, filter='*.mim')
         self.image_file.save_points_masks(save_path[0])
 
+    ## @brief Load points and masks from a MIM file
+    # @details Load points and masks from a MIM file
     def loadPointsMasks(self):
         load_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.mim')
         self.image_file.load_points_masks(load_path[0])
 
+    ## @brief Allow user to create a new mask
     def newMask(self):
         self.currentMaskIndex += 1
         self.toMaskMode(True)
 
+    ## @brief Delete a point from a mask
+    # @param index Index of the mask
+    # @param pointIndex Index of the point
     def deletePointFromMask(self, index: int, pointIndex: int):
         self.image_file.delete_point_from_mask(index, pointIndex)
 
+    ## @brief Update list of user-created masks
     def updateMasksList(self):
         print()
 
+    ## @brief Switch to mask or point mode
+    # @param state True = mask mode, False = point mode
     def toMaskMode(self, state: bool):
         self.maskMode = state
         if self.maskMode == True:
@@ -215,6 +252,8 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
             print("Point mode")
             self.enableUi(True)
 
+    ## @brief Keyboard commands implementation
+    # @param event Event containing the released key
     def keyReleaseEvent(self, event):
         # Space key : Add point to points or a mask
         if event.key() == QtCore.Qt.Key_Space:
