@@ -28,25 +28,15 @@ class Fd_data:
     def get_slice(self, img_nb, plane_nb, slice_nb, contrast_min, contrast_max, colormap):
         # the slice(None) index will take an entire dimension, so using 2 of them and a number will reduce the
         # dimensions of the original array by one if the image is 3D
-        print("_____________________________")
         slice_range = [slice(None)] * 3
-        print(slice_range)
-        print("---")
         slice_range[plane_nb] = slice_nb
-        print(slice_range)
-        print("---")
         slice_range = tuple(slice_range)
-        print(slice_range)
-        print("---")
+
         # if the original image is 4D, we need to further reduce the number of dimensions by selecting a 3D image
         if len(self.shape) == 4: slice_range = slice_range + (img_nb,)
-        print(slice_range)
         
-        print("---")
         # after the 2D plane has been extracted, the contrast must be changed according to the contrast sliders' values
         plane = numpy.copy(self.data[slice_range])
-        print(plane)
-        print("---")
         plane[plane < contrast_min] = contrast_min
         plane[plane > contrast_max] = contrast_max
 
@@ -94,6 +84,7 @@ class Fd_data:
 
     def add_point(self, point, color=None):
         if len(point) == 4 and point not in self.points:
+            color_point = color if color else (255,0,0,255)
             self.points.append(point+color)
     
     def delete_point(self, index):
@@ -118,15 +109,6 @@ class Fd_data:
             self.points.extend(l_points)
             self.masks.extend(l_masks)
     
-    def save(self, save_path):
-        shape_3d = self.img.shape[0:3]
-        rgb_dtype = numpy.dtype([('R', 'u1'), ('G', 'u1'), ('B', 'u1')])
-        ras_pos = self.img.copy().view(dtype=rgb_dtype).reshape(shape_3d)  # copy used to force fresh internal structure
-        ni_img = nibabel.Nifti1Image(self.img, numpy.eye(4))
-        #new_img = nibabel.Nifti1Image(self.data, self.img.affine, self.header)
-        
-        nibabel.save(ni_img, save_path)
-
 def set_colormap(image, color):
     cmap = cm.get_cmap(color)
     img = image.convert('L')
