@@ -5,7 +5,7 @@ from PyQt5.QtGui import QColor, QPen
 from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsLineItem, QGraphicsView
 import Mimir_lib
 
-
+## @brief Slice viewer
 class CursorGraphicsView(QGraphicsView):
 
     def __init__(self, *__args):
@@ -13,6 +13,8 @@ class CursorGraphicsView(QGraphicsView):
         self.num = -1
         self.scale = (1, 1)
 
+    ## @brief Mouse commands implementation
+    # @param event Event containing the click action
     def mouseReleaseEvent(self, event):
         if not self.scene(): return
 
@@ -30,27 +32,39 @@ class CursorGraphicsView(QGraphicsView):
             for i, slider in enumerate(self.sliders): slider.setValue(coords[i])
             for viewer in self.viewers: viewer.show_cursor(coords)
 
+    ## @brief 
     def set_num(self, num: int):
         self.num = num
 
+    ## @brief Scale image of this viewer
+    # @param scale Scaling factor
     def set_scale(self, scale: float):
         self.scale = scale
 
+    ## @brief Set a reference to all viewers
+    # @param viewers List of viewers
     def set_viewers(self, viewers):
         self.viewers = viewers
 
+    ## @brief Set a reference to all slice sliders
+    # @param sliders List of sliders
     def set_sliders(self, sliders):
         self.sliders = sliders
 
+    ## @brief 
     def set_fd_data(self, fd_data):
         self.fd_data = fd_data
 
+    ## @brief Define the cycle slider associated to this viewer
+    # @param cycle_slider Cycle slider
     def set_cycle_slider(self, cycle_slider):
         self.cycle_slider = cycle_slider
 
+    ## @brief 
     def get_coords(self, pos):
         return [(s.value() if i == self.num else pos.pop(0)) for i, s in enumerate(self.sliders)]
 
+    ## @brief Create the cursor
     def make_cursor(self):
         pen = QPen(QColor(0, 255, 0))
         h_line = QGraphicsLineItem(-10, 0, 10, 0)
@@ -67,6 +81,8 @@ class CursorGraphicsView(QGraphicsView):
         self.point_cursor.setVisible(False)
         self.scene().addItem(self.point_cursor)
 
+    ## @brief Draw the cursor
+    # @param values
     def show_cursor(self, values):
         pos = values.copy()
         pos.pop(self.num)

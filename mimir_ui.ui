@@ -220,7 +220,7 @@
               <item>
                <widget class="QPushButton" name="savePointsBt">
                 <property name="text">
-                 <string>Save points</string>
+                 <string>Save</string>
                 </property>
                </widget>
               </item>
@@ -255,14 +255,23 @@
               <item>
                <widget class="QPushButton" name="saveMasksBt">
                 <property name="text">
-                 <string>Save masks</string>
+                 <string>Save</string>
                 </property>
                </widget>
               </item>
              </layout>
             </item>
             <item>
-             <widget class="QTableView" name="masksList"/>
+             <widget class="QTreeWidget" name="masksList">
+              <property name="columnCount">
+               <number>1</number>
+              </property>
+              <column>
+               <property name="text">
+                <string>Mask</string>
+               </property>
+              </column>
+             </widget>
             </item>
            </layout>
           </widget>
