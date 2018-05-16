@@ -15,7 +15,7 @@ class Fd_data:
         self.shape = self.data.shape
         self.points = []
         self.masks = []
-        self.default_color = (255,0,0,255)
+        self.default_color = [255,0,0,255]
 
     def get_contrast_min(self):
         return self.contrast_min
@@ -73,24 +73,24 @@ class Fd_data:
                     mask_points.extend(temp_list)
             if len(mask_points) >= 4:
                 color = mask.get_color() if mask.get_color() else self.default_color
-                image_draw.polygon(tuple(mask_points), fill=color)
+                image_draw.polygon(tuple(mask_points), fill=tuple(color))
         points_position = []
         for a in self.points:
             if a[3] == img_nb and a[plane_nb] == slice_nb:
-                color = tuple(a[:4]) if a[:4] else self.default_color
+                color = a[:4] if a[:4] else self.default_color
                 temp_list = a[:plane_nb]+a[plane_nb+1:3]
                 temp_list.reverse()
-                image_draw.point(tuple(temp_list), fill=color)
+                image_draw.point(tuple(temp_list), fill=tuple(color))
         return image
 
     def add_point(self, point, color=None):
         if len(point) == 4 and point not in self.points:
-            color_point = tuple(color) if color and len(color) == 4 else self.default_color
+            color_point = color if color and len(color) == 4 else self.default_color
             self.points.append(point+color_point)
     
     def set_color_point(self, index, color):
         if index < len(self.points) and index >= 0 and len(color) == 4:
-            self.points[index] = self.points[index][:4]+tuple(color)
+            self.points[index] = self.points[index][:4]+color
 
     def delete_point(self, index):
         if index < len(self.points) and index >= 0:
@@ -137,7 +137,7 @@ class Mask:
 
     def set_color(self, color):
         if len(color) == 4:
-            self.color = tuple(color)
+            self.color = color
 
     def get_color(self):
         return self.color
