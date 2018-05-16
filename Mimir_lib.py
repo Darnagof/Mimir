@@ -96,8 +96,9 @@ class Fd_data:
             self.masks.append(Mask())
         return self.masks[index]
 
-    def delete_point_from_mask(self, index, pointIndex):
-        self.masks[index].delete_point(pointIndex)
+    def delete_mask(self, index):
+        if index < len(self.masks) and index >=0:
+            del self.masks[index]
 
     def save_points_masks(self, save_path):
         with open(save_path, 'wb') as fp:
