@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QAction, QGraphicsScene, QListView, QTreeWidget, QTreeWidgetItem
-from PyQt5.QtGui import QTransform, QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QAction, QGraphicsScene, QListView, QTreeWidget, QTreeWidgetItem, QColorDialog, QMessageBox, QPushButton
+from PyQt5.QtGui import QTransform, QStandardItemModel, QStandardItem, QColor
 from PyQt5.QtCore import QPointF, QStringListModel
 from PyQt5 import QtCore
 import sys
@@ -33,6 +33,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
 
         # Interface initialization
         self.setupUi(self)
+        self.showMaximized()
         self.slice_viewers = [self.sagittal_slice_viewer, self.coronal_slice_viewer, self.axial_slice_viewer]
         self.slice_sliders = [self.sagittal_slice_slider, self.coronal_slice_slider, self.axial_slice_slider]
         # Points list
@@ -57,6 +58,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         # ------ Mask menu
         self.actionNew_mask.triggered.connect(lambda: self.newMask())
         self.actionDelete_mask.triggered.connect(lambda: self.delete_mask())
+        self.actionSet_color.triggered.connect(lambda: self.setMaskColor())
         # ------ Screenshot menu
         self.actionSave_current_axial_slice.triggered.connect(lambda: self.saveSlice(2))
         self.actionSave_current_sagittal_slice.triggered.connect(lambda: self.saveSlice(0))
@@ -240,7 +242,14 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.masks_list.clear()
         root = self.masks_list.invisibleRootItem()
         for i, mask in enumerate(self.image_file.masks):
-            root.addChild(QTreeWidgetItem([str(i)]))
+            child = QTreeWidgetItem([str(i)])
+            root.addChild(child)
+            colorButton = QPushButton("", self)
+            maskColor = mask.get_color() or [255, 0, 0, 0]
+            maskColorHex = QColor(maskColor[0], maskColor[1], maskColor[2], maskColor[3]).name()
+            colorButton.setStyleSheet("background-color:" + maskColorHex + ";")
+            colorButton.clicked.connect(lambda value, i=i: self.setMaskColor(i))
+            self.masks_list.setItemWidget(child, 1, colorButton)
             for point in mask.points:
                 root.child(i).addChild(QTreeWidgetItem([str(point)]))
 
@@ -279,9 +288,11 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.currentMaskIndex += 1
         self.toMaskMode(True)
 
+    ## @brief Get last index of masks from the image file
     def getLastMaskIndex(self):
         return len(self.image_file.masks) - 1
 
+    ## @brief Go to mask or point from mask coordinates
     def goToMask(self):
         # If point selected
         if self.masks_list.indexOfTopLevelItem(self.masks_list.currentItem())==-1:
@@ -290,6 +301,29 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         else:
             goto = self.image_file.get_mask(self.masks_list.currentIndex().row()).points[0]
         for i, slider in enumerate(self.slice_sliders): slider.setValue(goto[i])
+    
+    ## @brief Open color window to change mask color
+    def setMaskColor(self, index = None):
+        print("Index: " + str(index))
+        # If mask selected in masks list
+        if index == None: 
+            if self.masks_list.currentItem() and self.masks_list.indexOfTopLevelItem(self.masks_list.currentItem())!=-1:
+                index = self.masks_list.currentIndex().row()
+            else:
+                print("No mask selected")
+                return
+        # Verify if there is a mask with the chosen index
+        if index <= self.getLastMaskIndex():
+            mask = self.image_file.get_mask(index)
+            maskColor = mask.get_color() or [255, 0, 0, 255]
+            newColor = QColorDialog.getColor(QColor(maskColor[0], maskColor[1], maskColor[2], maskColor[3]), self, "Mask color", QColorDialog.ShowAlphaChannel)
+            if newColor.isValid():
+                mask.set_color(newColor.getRgb())
+                self.drawAllViewers()
+                self.updateMasksList()
+            else: print("Invalid color")
+        else:
+            print("Invalid mask index")
 
     ## @brief Switch to mask or point mode
     # @param state True = mask mode, False = point mode

@@ -46,7 +46,7 @@
         <item>
          <widget class="QTabWidget" name="tabMenu">
           <property name="currentIndex">
-           <number>1</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="mainTab">
            <attribute name="title">
@@ -264,11 +264,16 @@
             <item>
              <widget class="QTreeWidget" name="masksList">
               <property name="columnCount">
-               <number>1</number>
+               <number>2</number>
               </property>
               <column>
                <property name="text">
                 <string>Mask</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Color</string>
                </property>
               </column>
              </widget>
@@ -498,6 +503,7 @@
     </property>
     <addaction name="actionNew_mask"/>
     <addaction name="actionDelete_mask"/>
+    <addaction name="actionSet_color"/>
    </widget>
    <widget class="QMenu" name="menuScreenshot">
     <property name="title">
@@ -565,6 +571,11 @@
   <action name="actionSave_current_axial_slice">
    <property name="text">
     <string>Save current axial slice</string>
+   </property>
+  </action>
+  <action name="actionSet_color">
+   <property name="text">
+    <string>Set color</string>
    </property>
   </action>
  </widget>

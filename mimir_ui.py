@@ -144,7 +144,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.addWidget(self.saveMasksBt)
         self.verticalLayout_7.addLayout(self.horizontalLayout_5)
         self.masksList = QtWidgets.QTreeWidget(self.masksTab)
-        self.masksList.setColumnCount(1)
+        self.masksList.setColumnCount(2)
         self.masksList.setObjectName("masksList")
         self.verticalLayout_7.addWidget(self.masksList)
         self.tabMenu.addTab(self.masksTab, "")
@@ -265,6 +265,8 @@ class Ui_MainWindow(object):
         self.actionSave_current_coronal_slice.setObjectName("actionSave_current_coronal_slice")
         self.actionSave_current_axial_slice = QtWidgets.QAction(MainWindow)
         self.actionSave_current_axial_slice.setObjectName("actionSave_current_axial_slice")
+        self.actionSet_color = QtWidgets.QAction(MainWindow)
+        self.actionSet_color.setObjectName("actionSet_color")
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionClose)
         self.menuFile.addSeparator()
@@ -274,6 +276,7 @@ class Ui_MainWindow(object):
         self.menuPoint.addAction(self.actionDelete_point)
         self.menuMask.addAction(self.actionNew_mask)
         self.menuMask.addAction(self.actionDelete_mask)
+        self.menuMask.addAction(self.actionSet_color)
         self.menuScreenshot.addAction(self.actionSave_current_sagittal_slice)
         self.menuScreenshot.addAction(self.actionSave_current_coronal_slice)
         self.menuScreenshot.addAction(self.actionSave_current_axial_slice)
@@ -283,7 +286,7 @@ class Ui_MainWindow(object):
         self.menuBar.addAction(self.menuScreenshot.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tabMenu.setCurrentIndex(1)
+        self.tabMenu.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -304,6 +307,7 @@ class Ui_MainWindow(object):
         self.delMaskBt.setText(_translate("MainWindow", "-"))
         self.saveMasksBt.setText(_translate("MainWindow", "Save"))
         self.masksList.headerItem().setText(0, _translate("MainWindow", "Mask"))
+        self.masksList.headerItem().setText(1, _translate("MainWindow", "Color"))
         self.tabMenu.setTabText(self.tabMenu.indexOf(self.masksTab), _translate("MainWindow", "Masks"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuPoint.setTitle(_translate("MainWindow", "Point"))
@@ -320,5 +324,6 @@ class Ui_MainWindow(object):
         self.actionSave_current_sagittal_slice.setText(_translate("MainWindow", "Save current sagittal slice"))
         self.actionSave_current_coronal_slice.setText(_translate("MainWindow", "Save current coronal slice"))
         self.actionSave_current_axial_slice.setText(_translate("MainWindow", "Save current axial slice"))
+        self.actionSet_color.setText(_translate("MainWindow", "Set color"))
 
 from CursorGraphicsView import CursorGraphicsView
