@@ -143,7 +143,8 @@ class Ui_MainWindow(object):
         self.saveMasksBt.setObjectName("saveMasksBt")
         self.horizontalLayout_5.addWidget(self.saveMasksBt)
         self.verticalLayout_7.addLayout(self.horizontalLayout_5)
-        self.masksList = QtWidgets.QTableView(self.masksTab)
+        self.masksList = QtWidgets.QTreeWidget(self.masksTab)
+        self.masksList.setColumnCount(1)
         self.masksList.setObjectName("masksList")
         self.verticalLayout_7.addWidget(self.masksList)
         self.tabMenu.addTab(self.masksTab, "")
@@ -282,7 +283,7 @@ class Ui_MainWindow(object):
         self.menuBar.addAction(self.menuScreenshot.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tabMenu.setCurrentIndex(0)
+        self.tabMenu.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -297,11 +298,12 @@ class Ui_MainWindow(object):
         self.tabMenu.setTabText(self.tabMenu.indexOf(self.mainTab), _translate("MainWindow", "Main"))
         self.addPointBt.setText(_translate("MainWindow", "+"))
         self.delPointBt.setText(_translate("MainWindow", "-"))
-        self.savePointsBt.setText(_translate("MainWindow", "Save points"))
+        self.savePointsBt.setText(_translate("MainWindow", "Save"))
         self.tabMenu.setTabText(self.tabMenu.indexOf(self.pointsTab), _translate("MainWindow", "Points"))
         self.addMaskBt.setText(_translate("MainWindow", "+"))
         self.delMaskBt.setText(_translate("MainWindow", "-"))
-        self.saveMasksBt.setText(_translate("MainWindow", "Save masks"))
+        self.saveMasksBt.setText(_translate("MainWindow", "Save"))
+        self.masksList.headerItem().setText(0, _translate("MainWindow", "Mask"))
         self.tabMenu.setTabText(self.tabMenu.indexOf(self.masksTab), _translate("MainWindow", "Masks"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuPoint.setTitle(_translate("MainWindow", "Point"))

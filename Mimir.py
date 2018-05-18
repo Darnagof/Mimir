@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QAction, QGraphicsScene, QListView
-from PyQt5.QtGui import QTransform, QStandardItemModel
+from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QAction, QGraphicsScene, QListView, QTreeWidget, QTreeWidgetItem
+from PyQt5.QtGui import QTransform, QStandardItemModel, QStandardItem
 from PyQt5.QtCore import QPointF, QStringListModel
 from PyQt5 import QtCore
 import sys
@@ -35,44 +35,63 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.setupUi(self)
         self.slice_viewers = [self.sagittal_slice_viewer, self.coronal_slice_viewer, self.axial_slice_viewer]
         self.slice_sliders = [self.sagittal_slice_slider, self.coronal_slice_slider, self.axial_slice_slider]
+        # Points list
         self.points_list = self.findChild(QListView, 'pointsList')
         self.points_model = QStringListModel()
         self.points_list.setModel(self.points_model)
-        self.masks_model = QStandardItemModel()
-        self.masks_model.setHorizontalHeaderLabels(['#', 'Type'])
-        self.masksList.setModel(self.masks_model)
+        # Masks list
+        self.masks_list = self.findChild(QTreeWidget, 'masksList')
         # --- Connection to functions
+        # ------ Save slice buttons
         self.axial_save_slice.clicked.connect(lambda: self.saveSlice(2))
         self.sagittal_save_slice.clicked.connect(lambda: self.saveSlice(0))
         self.coronal_save_slice.clicked.connect(lambda: self.saveSlice(1))
+        # ------ File menu
         self.actionClose.triggered.connect(self.closeFile)
+        self.actionOpen.triggered.connect(self.openFile)
         self.actionSave_points_masks.triggered.connect(self.savePointsMasks)
         self.actionLoad_points_masks.triggered.connect(self.loadPointsMasks)
-        self.actionOpen.triggered.connect(self.openFile)
+        # ------ Point menu
+        self.actionNew_point.triggered.connect(lambda: self.add_point(self.current_coords, self.cycle))
+        self.actionDelete_point.triggered.connect(lambda: self.delete_point())
+        # ------ Mask menu
+        self.actionNew_mask.triggered.connect(lambda: self.newMask())
+        self.actionDelete_mask.triggered.connect(lambda: self.delete_mask())
+        # ------ Screenshot menu
+        self.actionSave_current_axial_slice.triggered.connect(lambda: self.saveSlice(2))
+        self.actionSave_current_sagittal_slice.triggered.connect(lambda: self.saveSlice(0))
+        self.actionSave_current_coronal_slice.triggered.connect(lambda: self.saveSlice(1))
+        # ------ Sliders
         for i in range(3):
             self.slice_sliders[i].valueChanged.connect(lambda value, i=i: self.drawViewer(self.slice_viewers[i], i, self.slice_sliders[i].value()))
         self.cycle_slider.valueChanged.connect(self.drawAllViewers)
         self.max_contrast_slider.valueChanged.connect(self.drawAllViewers)
         self.min_contrast_slider.valueChanged.connect(self.drawAllViewers)
+        # ------ Colormap list
         colormaps = pyplot.colormaps()
         colormaps.insert(0, "")
         self.comboBox.addItems(colormaps)
         self.comboBox.currentIndexChanged.connect(self.drawAllViewers)
+        # ------ Points tab
+        self.addPointBt.clicked.connect(lambda: self.add_point(self.current_coords, self.cycle))
+        self.delPointBt.clicked.connect(lambda: self.delete_point())
+        self.savePointsBt.clicked.connect(lambda: self.savePointsMasks())
+        # ------ Masks tab
+        self.addMaskBt.clicked.connect(lambda: self.newMask())
+        self.delMaskBt.clicked.connect(lambda: self.delete_mask())
+        self.saveMasksBt.clicked.connect(lambda: self.savePointsMasks())
+        self.masks_list.itemDoubleClicked.connect(lambda: self.goToMask())
         # --- Slice viewers
         for i, viewer in enumerate(self.slice_viewers):
             viewer.set_num(i)
             viewer.set_viewers(self.slice_viewers)
             viewer.set_sliders(self.slice_sliders)
             viewer.set_cycle_slider(self.cycle_slider)
-        self.addPointBt.clicked.connect(lambda: self.add_point(self.current_coords, self.cycle))
-        self.delPointBt.clicked.connect(lambda: self.delete_point())
-        self.savePointsBt.clicked.connect(lambda: self.savePointsMasks())
-        self.addMaskBt.clicked.connect(lambda: self.newMask())
         # Set most of UI to "not enabled"
         self.enableUi(False)
 
     ## @brief Enable or disable most of UI elements.
-    # @details Enable or disable most of buttons or other elements for the user. It generaly depend if an image file is opended or not.
+    # @details Enable or disable most of buttons or other elements for the user. It generaly depend if an image file is opened or not.
     # @param state If true, enable most of UI elements, otherwise disable them.
     def enableUi(self, state: bool):
         # --- Menu bar
@@ -104,7 +123,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.tabMenu.setEnabled(state)
 
     ## @brief Open image file.
-    # @details Launche browser window to open an image file, then load the file in Mimir.
+    # @details Launch browser window to open an image file, then load the file in Mimir.
     def openFile(self):
         image_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.nii *.nii.gz')
         if not os.path.isfile(image_path[0]): return
@@ -126,10 +145,12 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
             self.cycle_slider.setEnabled(True)
         # Enable UI functionnalities
         self.enableUi(True)
-        # Try to load points
+        # Try to load points and masks
         if os.path.isfile(self.lastUsedPath + "/" + self.filename + ".mim"):
             self.image_file.load_points_masks(self.lastUsedPath + "/" + self.filename + ".mim")
             self.updatePointsList()
+            self.updateMasksList()
+            self.currentMaskIndex = self.getLastMaskIndex()
         # Set maximum to slice sliders
         for i in range(3):
             self.slice_sliders[i].setMaximum(self.image_file.shape[i] - 1)
@@ -159,9 +180,9 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
 
     ## @brief Draw one viewer
     # @details Draw one viewer according to the current coordinates
-    # @param viewer
-    # @param num_type
-    # @param num_slice
+    # @param viewer Viewer object to draw with
+    # @param num_type 0:sagittal view, 1: coronal view, 2: axial view.
+    # @param num_slice Index of slice to draw
     def drawViewer(self, viewer, num_type: int, num_slice: int):
         self.current_coords[num_type] = num_slice
         self.color_map = self.comboBox.currentText()
@@ -190,22 +211,22 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     def updatePointsList(self):
         str_points = []
         for point in self.image_file.points:
-            str_points.append(str(point))
+            str_points.append(str(point[:4]))
         self.points_model.setStringList(str_points)
 
     ## @brief Add point into image file
     # @details Add a point, then update points list and viewers.
     # The point is not saved yet into the MIM file.
     # @param coords 3D-coordinates of the point
-    # @param cycle
+    # @param cycle Cycle index
     def add_point(self, coords: list, cycle: int):
         self.image_file.add_point(coords + [cycle])
         print("Point added: " + str(coords + [cycle]))#DEBUG
         self.updatePointsList()
         self.drawAllViewers()
 
-    ## @brief Delete point
-    # @details Delete a point, then update points list and viewers.
+    ## @brief Delete selected point
+    # @details Delete the selected point, then update points list and viewers.
     # The point deletion is not saved yet into the MIM file.
     def delete_point(self):
         for selection in self.points_list.selectedIndexes():
@@ -213,6 +234,32 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
             print("Point deleted: " + str(selection.row()))#DEBUG
         self.updatePointsList()
         self.drawAllViewers()
+
+    ## @brief Update list of user-created masks
+    def updateMasksList(self):
+        self.masks_list.clear()
+        root = self.masks_list.invisibleRootItem()
+        for i, mask in enumerate(self.image_file.masks):
+            root.addChild(QTreeWidgetItem([str(i)]))
+            for point in mask.points:
+                root.child(i).addChild(QTreeWidgetItem([str(point)]))
+
+    ## @brief Delete selected mask or point from mask
+    # @details Delete the selected mask or point from a mask , then update masks list and viewers.
+    # The mask/point deletion is not saved yet into the MIM file.
+    def delete_mask(self):
+        if self.masks_list.currentItem():
+            # If point selected
+            if self.masks_list.indexOfTopLevelItem(self.masks_list.currentItem())==-1:
+                self.image_file.get_mask(self.masks_list.currentIndex().parent().row()).delete_point(self.masks_list.currentItem().parent().indexOfChild(self.masks_list.currentItem()))
+                print("Delete from mask #" + str(self.masks_list.currentIndex().parent().row()) + " point n°" + str(self.masks_list.currentItem().parent().indexOfChild(self.masks_list.currentItem())))
+            # Else mask selected
+            else:
+                self.image_file.delete_mask(self.masks_list.currentIndex().row())
+                print("Delete mask #"+str(self.masks_list.currentIndex().row()))
+            self.updateMasksList()
+            self.drawAllViewers()
+            self.currentMaskIndex = self.getLastMaskIndex()
 
     ## @brief Save points and masks
     # @details Save current points and masks into a MIM file. All deleted items are lost.
@@ -225,21 +272,24 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     def loadPointsMasks(self):
         load_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.mim')
         self.image_file.load_points_masks(load_path[0])
+        self.currentMaskIndex = self.getLastMaskIndex()
 
     ## @brief Allow user to create a new mask
     def newMask(self):
         self.currentMaskIndex += 1
         self.toMaskMode(True)
 
-    ## @brief Delete a point from a mask
-    # @param index Index of the mask
-    # @param pointIndex Index of the point
-    def deletePointFromMask(self, index: int, pointIndex: int):
-        self.image_file.delete_point_from_mask(index, pointIndex)
+    def getLastMaskIndex(self):
+        return len(self.image_file.masks) - 1
 
-    ## @brief Update list of user-created masks
-    def updateMasksList(self):
-        print()
+    def goToMask(self):
+        # If point selected
+        if self.masks_list.indexOfTopLevelItem(self.masks_list.currentItem())==-1:
+            goto = self.image_file.get_mask(self.masks_list.currentIndex().parent().row()).points[0]
+        # Else mask selected
+        else:
+            goto = self.image_file.get_mask(self.masks_list.currentIndex().row()).points[0]
+        for i, slider in enumerate(self.slice_sliders): slider.setValue(goto[i])
 
     ## @brief Switch to mask or point mode
     # @param state True = mask mode, False = point mode
@@ -251,6 +301,8 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         else:
             print("Point mode")
             self.enableUi(True)
+            self.updateMasksList()
+            self.currentMaskIndex = self.getLastMaskIndex()
 
     ## @brief Keyboard commands implementation
     # @param event Event containing the released key
@@ -258,7 +310,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         # Space key : Add point to points or a mask
         if event.key() == QtCore.Qt.Key_Space:
             if(self.maskMode):
-                self.image_file.add_point_to_mask([self.slice_sliders[0].value(), self.slice_sliders[1].value(), self.slice_sliders[2].value()], self.currentMaskIndex)
+                self.image_file.get_mask(self.currentMaskIndex).add_point([self.slice_sliders[0].value(), self.slice_sliders[1].value(), self.slice_sliders[2].value()])
                 print("Add point to mask ", self.currentMaskIndex, ": ", str([self.slice_sliders[0].value(), self.slice_sliders[1].value(), self.slice_sliders[2].value()]))
                 self.drawAllViewers()
             else:
