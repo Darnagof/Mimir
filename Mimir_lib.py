@@ -77,10 +77,10 @@ class Fd_data:
         points_position = []
         for a in self.points:
             if a[3] == img_nb and a[plane_nb] == slice_nb:
-                color = a[:4] if a[:4] else self.default_color
+                color = a[4:] if a[4:] else self.default_color
                 temp_list = a[:plane_nb]+a[plane_nb+1:3]
                 temp_list.reverse()
-                image_draw.point(tuple(temp_list), fill=tuple(color))
+                image_draw.ellipse([temp_list[0]-1, temp_list[1]-1, temp_list[0]+1, temp_list[1]+1], fill=tuple(color))
         return image
 
     def add_point(self, point, color=None):
