@@ -3,7 +3,8 @@ import Mimir_lib
 import os
 import sys
 
-
+## @brief Check if a path exist, create it if not
+# @param file_path Path to check
 def ensure_dir(file_path):
     directory = os.path.dirname(file_path)
     if not os.path.exists(directory):
@@ -43,6 +44,7 @@ if(args.img_nb and (args.img_nb < 0 or args.img_nb > image_file.shape[3])):
 contrast_min = round(image_file.contrast_min+args.contrast_min*(image_file.contrast_max-image_file.contrast_min)/100)
 contrast_max = round(image_file.contrast_min+args.contrast_max*(image_file.contrast_max-image_file.contrast_min)/100)
 
+#Save every slices corresponding to the given options
 if(args.all):
     for i in range(args.img_nb if args.img_nb else 0, args.img_nb + 1 if args.img_nb else image_file.shape[3]):
         for j in range(plane_nb if args.plane else 0, plane_nb + 1 if args.plane else 3):
