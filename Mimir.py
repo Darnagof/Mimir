@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QAction, QGraphicsScene, QListView, QTreeWidget, QTreeWidgetItem, QColorDialog, QMessageBox, QPushButton
+from PyQt5.QtWidgets import QFileDialog, QApplication, QMainWindow, QAction, QGraphicsScene, QListView, QTreeWidget, QTreeWidgetItem, QColorDialog, QMessageBox, QToolButton
 from PyQt5.QtGui import QTransform, QStandardItemModel, QStandardItem, QColor
 from PyQt5.QtCore import QPointF, QStringListModel
 from PyQt5 import QtCore
@@ -14,6 +14,8 @@ from CursorGraphicsView import CursorGraphicsView
 
 ## @brief GUI of Mímir
 class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
+
+    ## @brief Initiate Qt interface and variables
     def __init__(self, parent=None):
         super(Mimir, self).__init__(parent)
 
@@ -36,6 +38,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.showMaximized()
         self.slice_viewers = [self.sagittal_slice_viewer, self.coronal_slice_viewer, self.axial_slice_viewer]
         self.slice_sliders = [self.sagittal_slice_slider, self.coronal_slice_slider, self.axial_slice_slider]
+        self.slice_labels = [self.sagittal_slice_label, self.coronal_slice_label, self.axial_slice_label]
         # Points list
         self.points_list = self.findChild(QListView, 'pointsList')
         self.points_model = QStringListModel()
@@ -92,7 +95,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         # Set most of UI to "not enabled"
         self.enableUi(False)
 
-    ## @brief Enable or disable most of UI elements.
+    ## @brief Enable or disable most of UI elements
     # @details Enable or disable most of buttons or other elements for the user. It generaly depend if an image file is opened or not.
     # @param state If true, enable most of UI elements, otherwise disable them.
     def enableUi(self, state: bool):
@@ -123,8 +126,11 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.comboBox.setEnabled(state)
         # --- Tabs (Main, Points and Masks)
         self.tabMenu.setEnabled(state)
+        # --- Viewers
+        for viewer in self.slice_viewers:
+            viewer.setEnabled(state)
 
-    ## @brief Open image file.
+    ## @brief Open image file
     # @details Launch browser window to open an image file, then load the file in Mimir.
     def openFile(self):
         image_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.nii *.nii.gz')
@@ -159,15 +165,15 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         # First draw of images
         self.drawAllViewers()
 
-    ## @brief Close image file.
-    # @details Close image file then disable most of UI elements.
+    ## @brief Close image file
+    # @details Close image file then disable most of UI elements and clear viewers.
     def closeFile(self):
         del self.image_file
         self.enableUi(False)
-        # self.clearViewers()
+        self.clearViewers()
 
     ## @brief Save a slice as image file.
-    # @details Save the current showed slice from a chosen view as image file (PNG)
+    # @details Save the current showed slice from a chosen view as image file (PNG).
     # @param num_type Select the view from where the slice is saved (0:sagittal, 1:coronal, 1:axial).
     def saveSlice(self, num_type: int):
         save_path = QFileDialog.getSaveFileName(parent=self, directory=self.lastUsedPath+'/'+self.filename, filter='*.png')
@@ -175,18 +181,19 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         Mimir_lib.save_slice(self.slices[num_type], save_path[0])
 
     ## @brief Draw all viewers
-    # @details Draw all viewers according to the current coordinates
+    # @details Draw all viewers according to the current coordinates.
     def drawAllViewers(self):
         for i in range(3):
             self.drawViewer(self.slice_viewers[i], i, self.slice_sliders[i].value())
 
     ## @brief Draw one viewer
-    # @details Draw one viewer according to the current coordinates
+    # @details Draw one viewer according to the current coordinates.
     # @param viewer Viewer object to draw with
-    # @param num_type 0:sagittal view, 1: coronal view, 2: axial view.
-    # @param num_slice Index of slice to draw
+    # @param num_type 0:sagittal view, 1: coronal view, 2: axial view
+    # @param num_slice Index of slice to draw.
     def drawViewer(self, viewer, num_type: int, num_slice: int):
         self.current_coords[num_type] = num_slice
+        self.slice_labels[num_type].setText(str(num_slice))
         self.color_map = self.comboBox.currentText()
         self.contrast_min = self.min_contrast_slider.value()
         self.contrast_max = self.max_contrast_slider.value()
@@ -204,12 +211,12 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         viewer.make_cursor()
         #viewer.show_cursor()
 
-    ## @brief Clear all viewers
+    ## @brief Clear all viewers.
     def clearViewers(self):
         for viewer in self.slice_viewers:
-            viewer.items.clear()
+            viewer.scene().clear()
 
-    ## @brief Update list of user-created points
+    ## @brief Update list of user-created points.
     def updatePointsList(self):
         str_points = []
         for point in self.image_file.points:
@@ -244,14 +251,16 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         for i, mask in enumerate(self.image_file.masks):
             child = QTreeWidgetItem([str(i)])
             root.addChild(child)
-            colorButton = QPushButton("", self)
+            colorButton = QToolButton(self)
             maskColor = mask.get_color() or [255, 0, 0, 0]
             maskColorHex = QColor(maskColor[0], maskColor[1], maskColor[2], maskColor[3]).name()
             colorButton.setStyleSheet("background-color:" + maskColorHex + ";")
+            colorButton.setFixedWidth(colorButton.height())
             colorButton.clicked.connect(lambda value, i=i: self.setMaskColor(i))
             self.masks_list.setItemWidget(child, 1, colorButton)
             for point in mask.points:
                 root.child(i).addChild(QTreeWidgetItem([str(point)]))
+            self.masks_list.setColumnWidth(0, 200)
 
     ## @brief Delete selected mask or point from mask
     # @details Delete the selected mask or point from a mask , then update masks list and viewers.
@@ -277,7 +286,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.image_file.save_points_masks(save_path[0])
 
     ## @brief Load points and masks from a MIM file
-    # @details Load points and masks from a MIM file
+    # @details Open a file explorer to load points and masks from a MIM file.
     def loadPointsMasks(self):
         load_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.mim')
         self.image_file.load_points_masks(load_path[0])
@@ -292,7 +301,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     def getLastMaskIndex(self):
         return len(self.image_file.masks) - 1
 
-    ## @brief Go to mask or point from mask coordinates
+    ## @brief Go to mask or point of mask coordinates
     def goToMask(self):
         # If point selected
         if self.masks_list.indexOfTopLevelItem(self.masks_list.currentItem())==-1:
@@ -303,6 +312,8 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         for i, slider in enumerate(self.slice_sliders): slider.setValue(goto[i])
     
     ## @brief Open color window to change mask color
+    # @details Open menu to change the color of a mask.
+    # @param index Index of the mask to change the color. If None, it will be the index of the selected mask in list.
     def setMaskColor(self, index = None):
         print("Index: " + str(index))
         # If mask selected in masks list
