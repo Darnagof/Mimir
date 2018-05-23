@@ -294,7 +294,21 @@
          <number>1</number>
         </property>
         <item>
-         <widget class="CursorGraphicsView" name="coronal_slice_viewer"/>
+         <layout class="QVBoxLayout" name="verticalLayout_10">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Coronal view</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="CursorGraphicsView" name="coronal_slice_viewer"/>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -366,7 +380,21 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="CursorGraphicsView" name="sagittal_slice_viewer"/>
+         <layout class="QVBoxLayout" name="verticalLayout_11">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Sagittal view</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="CursorGraphicsView" name="sagittal_slice_viewer"/>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -432,7 +460,33 @@
          <number>1</number>
         </property>
         <item>
-         <widget class="CursorGraphicsView" name="axial_slice_viewer"/>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Axial view</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="CursorGraphicsView" name="axial_slice_viewer"/>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
