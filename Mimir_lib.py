@@ -93,7 +93,6 @@ class Fd_data:
             if len(mask_points) >= 4:
                 color = mask.get_color() if mask.get_color() else self.default_color
                 image_draw.polygon(tuple(mask_points), fill=tuple(color))
-        points_position = []
 
         #Draw points
         for a in self.points:
@@ -194,7 +193,7 @@ class Mask:
     def add_point(self, point):
         if len(point) == 3 and point not in self.points:
             if self.index_freeze != -1 and point[self.index_freeze] != self.value_freeze :
-                return
+                return 1
             self.points.append(point)
             #Check if the point is in the same plane as the mask
             if len(self.points) > 1:
@@ -209,11 +208,11 @@ class Mask:
                             t.append((k, a))
                 if len(t) == 0:
                     del self.points[len(self.points)-1]
-                    return
+                    return 1
                 if len(t) == 1:
                     self.index_freeze = t[0][0]
                     self.value_freeze = t[0][1]           
-
+            return 0
     ## @brief Delete a point
     # @param index Index of the point in the list
     def delete_point(self, index):
