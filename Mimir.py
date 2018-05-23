@@ -94,6 +94,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
             viewer.set_cycle_slider(self.cycle_slider)
         # Set most of UI to "not enabled"
         self.enableUi(False)
+        self.enableViewers(False)
 
     ## @brief Enable or disable most of UI elements
     # @details Enable or disable most of buttons or other elements for the user. It generaly depend if an image file is opened or not.
@@ -126,6 +127,8 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.comboBox.setEnabled(state)
         # --- Tabs (Main, Points and Masks)
         self.tabMenu.setEnabled(state)
+
+    def enableViewers(self, state: bool):
         # --- Viewers
         for viewer in self.slice_viewers:
             viewer.setEnabled(state)
@@ -153,6 +156,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
             self.cycle_slider.setEnabled(True)
         # Enable UI functionnalities
         self.enableUi(True)
+        self.enableViewers(True)
         # Try to load points and masks
         if os.path.isfile(self.lastUsedPath + "/" + self.filename + ".mim"):
             self.image_file.load_points_masks(self.lastUsedPath + "/" + self.filename + ".mim")
@@ -170,6 +174,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     def closeFile(self):
         del self.image_file
         self.enableUi(False)
+        self.enableViewers(False)
         self.clearViewers()
 
     ## @brief Save a slice as image file.
