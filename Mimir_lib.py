@@ -147,6 +147,8 @@ class Fd_data:
     ## @brief Load masks and points from a file
     # @param load_path Path of the input file
     def load_points_masks(self, load_path):
+        del self.points[:]
+        del self.masks[:]
         with open (load_path, 'rb') as fp:
             l_points, l_masks = pickle.load(fp)
             self.points.extend(l_points)

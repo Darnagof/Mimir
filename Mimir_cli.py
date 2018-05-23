@@ -30,7 +30,7 @@ parser.add_argument('-m', '--contrast-min', dest='contrast_min', default=0, type
 parser.add_argument('-M', '--contrast-max', dest='contrast_max', default=100, type=float, help='Adjust the maximum contrast in %% (0-100)')
 parser.add_argument('--all', dest='all', action='store_true', help='Process every slice possible with the options given')
 parser.add_argument('-l', '--link', dest='link', help='Link a .mim file to print points and masks stored in it')
-parser.add_argument('-e','--edit_points', dest='edit', action='store_true', help='Edit points and masks in the specified slices (if no other options, all slices are accessible)')
+parser.add_argument('-e','--edit', dest='edit', action='store_true', help='Edit points and masks in the specified slices (if no other options, all slices are accessible)')
 args = parser.parse_args()
 
 if not os.path.isfile(args.path_in):
@@ -182,4 +182,4 @@ else:
             ensure_dir(path_out)
             Mimir_lib.save_slice(img, path_out)
         else:
-            parser.error('both plane and slice_nb arguments are obligatory if --all flag is not set.')
+            parser.error('both plane and slice_nb arguments are obligatory if --all or -e|--edit flag are not set.')
