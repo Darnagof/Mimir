@@ -288,14 +288,18 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     # @details Save current points and masks into a MIM file. All deleted items are lost.
     def savePointsMasks(self):
         save_path = QFileDialog.getSaveFileName(parent=self, directory=self.lastUsedPath+'/'+self.filename, filter='*.mim')
+        if not os.path.isfile(save_path[0]): return
         self.image_file.save_points_masks(save_path[0])
 
     ## @brief Load points and masks from a MIM file
     # @details Open a file explorer to load points and masks from a MIM file.
     def loadPointsMasks(self):
         load_path = QFileDialog.getOpenFileName(parent=self, directory=self.lastUsedPath, filter='*.mim')
+        if not os.path.isfile(load_path[0]): return
         self.image_file.load_points_masks(load_path[0])
         self.currentMaskIndex = self.getLastMaskIndex()
+        self.updatePointsList()
+        self.updateMasksList()
 
     ## @brief Allow user to create a new mask
     def newMask(self):
