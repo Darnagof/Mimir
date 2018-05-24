@@ -154,6 +154,8 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         if len(self.image_file.shape) == 4:
             self.cycle_slider.setMaximum(self.image_file.shape[3] - 1)
             self.cycle_slider.setEnabled(True)
+        else:
+            self.cycle_slider.setMaximum(0)
         # Enable UI functionnalities
         self.enableUi(True)
         self.enableViewers(True)
@@ -204,9 +206,10 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.contrast_max = self.max_contrast_slider.value()
         self.cycle = self.cycle_slider.value()
         self.cycle_nb_label.setText(str(self.cycle) + "/" + str(self.cycle_slider.maximum()))
-        contrast_min_percent = round((self.contrast_min-self.min_contrast_slider.minimum())/(self.min_contrast_slider.maximum()-self.min_contrast_slider.minimum())*100, 2)
-        contrast_max_percent = round((self.contrast_max-self.max_contrast_slider.minimum())/(self.max_contrast_slider.maximum()-self.max_contrast_slider.minimum())*100, 2)
-        self.contrast_nb_label.setText(str(contrast_min_percent) + "% | " + str(contrast_max_percent) + "%")
+        if self.min_contrast_slider.minimum() != self.min_contrast_slider.maximum():
+            contrast_min_percent = round((self.contrast_min-self.min_contrast_slider.minimum())/(self.min_contrast_slider.maximum()-self.min_contrast_slider.minimum())*100, 2)
+            contrast_max_percent = round((self.contrast_max-self.max_contrast_slider.minimum())/(self.max_contrast_slider.maximum()-self.max_contrast_slider.minimum())*100, 2)
+            self.contrast_nb_label.setText(str(contrast_min_percent) + "% | " + str(contrast_max_percent) + "%")
         self.slices[num_type], scale = self.image_file.get_slice(self.cycle, num_type, num_slice, self.contrast_min, self.contrast_max, self.color_map)
         pixmap = self.slices[num_type].toqpixmap()
         scene = QGraphicsScene(0, 0, pixmap.width(), pixmap.height())
