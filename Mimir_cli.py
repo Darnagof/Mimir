@@ -1,8 +1,6 @@
 import argparse
 import Mimir_lib
 import os
-import sys
-
 ## @brief Check if a path exist, create it if not
 # @param file_path Path to check
 def ensure_dir(file_path):
@@ -56,8 +54,7 @@ contrast_max = round(image_file.contrast_min+args.contrast_max*(image_file.contr
 #MASK AND POINTS EDITION MODE
 if(args.edit):
     input_value = [""]
-    path_out = args.path_out if args.path_out else "{}/{}.mim".format(os.path.dirname(args.path_in),os.path.splitext(args.path_in)[0])
-    ensure_dir(path_out)
+    
     edit_point = True
     last_index = len(image_file.masks) - 1
     actual_index = 0
@@ -65,8 +62,21 @@ if(args.edit):
         input_value = input("{}> ".format("point" if edit_point else "mask {}".format(actual_index))).split()
         #SAVE
         if(input_value[0] == "save"):
+            path_out = args.path_out if args.path_out else "{}/{}.mim".format(os.path.dirname(args.path_in),os.path.splitext(args.path_in)[0])
+            ensure_dir(path_out)
             image_file.save_points_masks(path_out)
             print("Masks and points saved in {}".format(path_out))
+        #SAVE MASK TO NIFTI
+        elif(input_value[0] == "nifti" and len(input_value) == 2):
+            if(is_int(input_value[1]) and int(input_value[1]) < len(image_file.masks) and int(input_value[1]) >= 0):
+                path_out = "{}/{}_mask_{}.nii".format((os.path.dirname(args.path_out) if args.path_out else os.path.dirname(args.path_in)),os.path.splitext(args.path_in)[0],input_value[1])
+                ensure_dir(path_out)
+                image_file.get_mask(int(input_value[1])).save_mask_to_nifti(path_out)
+            elif(input_value[1] == "all"):
+                for k,mask in enumerate(image_file.masks):
+                    path_out = "{}/{}_mask_{}.nii".format((os.path.dirname(args.path_out) if args.path_out else os.path.dirname(args.path_in)),os.path.splitext(args.path_in)[0],k)
+                    ensure_dir(path_out)
+                    mask.save_mask_to_nifti(path_out)
         #CHANGE TO MASK MODE
         elif(input_value[0] == "mask" or input_value[0] == "m" or input_value[0] == "masks"):
             edit_point = False
@@ -128,6 +138,7 @@ if(args.edit):
         #HELP
         elif(input_value[0] == "help" or input_value[0] == "h" or input_value[0] == "?"):
             print("  save : \n\t\tSave the mim file to the output file provided or to the default output file ({}).".format("{}/{}.mim".format(os.path.dirname(args.path_in),os.path.splitext(args.path_in)[0])))
+            print("  nifti index|all: \n\t\tSave the mask at the index (or all masks if \"all\" is specified) to a nifti file.")
             print("  m|mask|masks [index] : \n\t\tEdit new mask or specific mask if index provided.")
             print("  p|point|points : \n\t\tEdit points.")
             print("  d|del|delete [mask] index : \n\t\tDelete point at index (from data if in point mode, from mask if in mask mode) or mask if specified \"mask\".")

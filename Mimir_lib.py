@@ -249,7 +249,7 @@ class Mask:
                 for k2,v2 in enumerate(v):
                     for k3,v3 in enumerate(v2):
                         if self.index_freeze == 0 and self.value_freeze == k and grid[k3][k2] \
-                        or self.index_freeze == 1 and self.value_freeze == k2 and grid[k][k3] \
+                        or self.index_freeze == 1 and self.value_freeze == k2 and grid[k3][k] \
                         or self.index_freeze == 2 and self.value_freeze == k3 and grid[k2][k]:
                             new_array[k][k2][k3] = 1.
         
