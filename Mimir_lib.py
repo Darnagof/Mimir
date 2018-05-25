@@ -3,6 +3,7 @@ import numpy
 import nibabel
 import pickle
 from matplotlib import cm
+from matplotlib.path import Path
 
 ## @brief Data of the loaded image
 class Fd_data:
@@ -54,7 +55,7 @@ class Fd_data:
         plane[plane < contrast_min] = contrast_min
         plane[plane > contrast_max] = contrast_max
 
-        converted = numpy.require(numpy.divide(numpy.subtract(plane, contrast_min), (contrast_max - contrast_min) / 255),
+        converted = numpy.require(numpy.divide(numpy.subtract(plane, contrast_min), (contrast_max - contrast_min) / 255 if contrast_max != contrast_min else 1),
                                 numpy.uint8, 'C')
 
         # the plane next needs to be scaled according to the scales in the NIfTI header
@@ -129,7 +130,7 @@ class Fd_data:
     # @param index Index of the mask in the list
     def get_mask(self, index):
         while index >= len(self.masks):
-            self.masks.append(Mask())
+            self.masks.append(Mask(self.shape[:3], self.header['pixdim']))
         return self.masks[index]
 
     ## @brief Delete a mask
@@ -153,7 +154,7 @@ class Fd_data:
             l_points, l_masks = pickle.load(fp)
             self.points.extend(l_points)
             self.masks.extend(l_masks)
-
+                
 ## @brief Add a colormap to an image
 # @param color Name of the colormap 
 def set_colormap(image, color):
@@ -174,11 +175,13 @@ def save_slice(image, save_path):
 
 ## @brief Data of a mask
 class Mask:
-    def __init__(self):
+    def __init__(self, shape, pixdim):
         self.points = []
         self.index_freeze = -1
         self.value_freeze = -1
         self.color = None
+        self.shape = shape
+        self.pixdim = pixdim
 
     ## @brief Change the color of the mask
     # @param color (R,G,B,A) color of the mask
@@ -220,3 +223,37 @@ class Mask:
     def delete_point(self, index):
         if index < len(self.points) and index >= 0:
             del self.points[index]
+    
+    ## @brief Save a mask in a nifti file
+    # @param save_path Path of the output file
+    def save_mask_to_nifti(self, save_path):
+        if self.masks[index].index_freeze != -1:
+            new_array = numpy.zeros(self.shape, dtype=numpy.float)
+            
+            nx, ny = (x for i,x in enumerate(self.shape) if i != self.index_freeze)
+            poly_verts = [tuple(x for i,x in enumerate(point) if i != self.index_freeze) for point in self.points]
+
+
+            x, y = numpy.meshgrid(numpy.arange(nx), numpy.arange(ny))
+            x, y = x.flatten(), y.flatten()
+
+            new_points = numpy.vstack((x,y)).T
+
+            path = Path(poly_verts)
+            grid = path.contains_points(new_points)
+            grid = grid.reshape((ny,nx))
+            print(len(grid),len(grid[0]))
+            print(len(new_array), len(new_array[0]), len(new_array[0][0]))
+            print(self.index_freeze, self.value_freeze)
+            for k,v in enumerate(new_array):
+                for k2,v2 in enumerate(v):
+                    for k3,v3 in enumerate(v2):
+                        if self.index_freeze == 0 and self.value_freeze == k and grid[k3][k2] \
+                        or self.index_freeze == 1 and self.value_freeze == k2 and grid[k][k3] \
+                        or self.index_freeze == 2 and self.value_freeze == k3 and grid[k2][k]:
+                            new_array[k][k2][k3] = 1.
+        
+            new_nifti = nibabel.Nifti1Image(new_array, affine=numpy.eye(4))
+            hdr = new_nifti.get_header()
+            hdr['pixdim'] = self.pixdim
+            new_nifti.to_filename(save_path)
