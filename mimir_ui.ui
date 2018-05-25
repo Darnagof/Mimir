@@ -266,7 +266,14 @@
               <item>
                <widget class="QPushButton" name="saveMaskNiftiBt">
                 <property name="text">
-                 <string>Save to Nifti</string>
+                 <string>Save to NifTI</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="saveAllMasksNiftiBt">
+                <property name="text">
+                 <string>Save all to NifTI</string>
                 </property>
                </widget>
               </item>
@@ -590,6 +597,9 @@
     <addaction name="actionNew_mask"/>
     <addaction name="actionDelete_mask"/>
     <addaction name="actionSet_color"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_to_NifTI"/>
+    <addaction name="actionSave_all_to_NifTI"/>
    </widget>
    <widget class="QMenu" name="menuScreenshot">
     <property name="title">
@@ -662,6 +672,16 @@
   <action name="actionSet_color">
    <property name="text">
     <string>Set color</string>
+   </property>
+  </action>
+  <action name="actionSave_to_NifTI">
+   <property name="text">
+    <string>Save to NifTI</string>
+   </property>
+  </action>
+  <action name="actionSave_all_to_NifTI">
+   <property name="text">
+    <string>Save all to NifTI</string>
    </property>
   </action>
  </widget>

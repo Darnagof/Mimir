@@ -61,6 +61,8 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.actionNew_mask.triggered.connect(lambda: self.newMask())
         self.actionDelete_mask.triggered.connect(lambda: self.delete_mask())
         self.actionSet_color.triggered.connect(lambda: self.setMaskColor())
+        self.actionSave_to_NifTI.triggered.connect(lambda: self.saveMaskToNifti())
+        self.actionSave_all_to_NifTI.triggered.connect(lambda: self.saveAllMasksToNifti())
         # ------ Screenshot menu
         self.actionSave_current_axial_slice.triggered.connect(lambda: self.saveSlice(2))
         self.actionSave_current_sagittal_slice.triggered.connect(lambda: self.saveSlice(0))
@@ -85,6 +87,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.delMaskBt.clicked.connect(lambda: self.delete_mask())
         self.saveMasksBt.clicked.connect(lambda: self.savePointsMasks())
         self.saveMaskNiftiBt.clicked.connect(lambda: self.saveMaskToNifti())
+        self.saveAllMasksNiftiBt.clicked.connect(lambda: self.saveAllMasksToNifti())
         self.masks_list.itemDoubleClicked.connect(lambda: self.goToMask())
         # --- Slice viewers
         for i, viewer in enumerate(self.slice_viewers):
@@ -308,7 +311,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.updatePointsList()
         self.updateMasksList()
 
-    ## @brief Save selected mask(s) to a NifTI file
+    ## @brief Save selected mask to a NifTI file
     def saveMaskToNifti(self):
         # A mask must be selected
         if self.masks_list.currentItem():
@@ -316,6 +319,13 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
                 save_path = QFileDialog.getSaveFileName(parent=self, directory=self.lastUsedPath+'/', filter='*.nii')
                 self.image_file.get_mask(self.masks_list.currentIndex().row()).save_mask_to_nifti(save_path[0])
 
+    ## @brief Save all masks to NifTI files
+    def saveAllMasksToNifti(self):
+        save_directory = QFileDialog.getExistingDirectory(self, "Select folder to save all masks", self.lastUsedPath+'/', QFileDialog.ShowDirsOnly)
+        print(save_directory)
+        if not os.path.isdir(save_directory): return
+        for i in range(len(self.image_file.masks)):
+            self.image_file.get_mask(i).save_mask_to_nifti(save_directory + "/" + self.filename + "_mask" + str(i))
 
     ## @brief Allow user to create a new mask
     def newMask(self):
