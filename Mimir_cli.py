@@ -110,7 +110,7 @@ if(args.edit):
                         else:
                             print("Color must be number in range (0-255).")
                     if(len(color) == 4):
-                        image_file.set_color_point(input_value[1], input_value[2:])
+                        image_file.set_color_point(int(input_value[1]), color)
                         print("Point {} set to color {}".format(input_value[1], input_value[2:]))
                     else:
                         print("Color must be number in range (0-255).")
