@@ -25,7 +25,6 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.color_map = None
         self.contrast_min = None
         self.contrast_max = None
-        self.one_percent_contrast = 0.0
         self.cycle = 0
         self.lastUsedPath = os.path.dirname(os.path.abspath(__file__))
         self.slices = {0:self.sagittal_slice, 1:self.coronal_slice, 2:self.axial_slice}
@@ -85,6 +84,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.addMaskBt.clicked.connect(lambda: self.newMask())
         self.delMaskBt.clicked.connect(lambda: self.delete_mask())
         self.saveMasksBt.clicked.connect(lambda: self.savePointsMasks())
+        self.saveMaskNiftiBt.clicked.connect(lambda: self.saveMaskToNifti())
         self.masks_list.itemDoubleClicked.connect(lambda: self.goToMask())
         # --- Slice viewers
         for i, viewer in enumerate(self.slice_viewers):
@@ -149,7 +149,6 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.min_contrast_slider.setMaximum(self.image_file.contrast_max)
         self.min_contrast_slider.setMinimum(self.image_file.contrast_min)
         self.min_contrast_slider.setValue(self.image_file.contrast_min)
-        self.one_percent_contrast = 1/(self.image_file.contrast_max - self.image_file.contrast_min)*100
 
         if len(self.image_file.shape) == 4:
             self.cycle_slider.setMaximum(self.image_file.shape[3] - 1)
@@ -162,14 +161,15 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         # Try to load points and masks
         if os.path.isfile(self.lastUsedPath + "/" + self.filename + ".mim"):
             self.image_file.load_points_masks(self.lastUsedPath + "/" + self.filename + ".mim")
-            self.updatePointsList()
-            self.updateMasksList()
             self.currentMaskIndex = self.getLastMaskIndex()
-        # Set maximum to slice sliders
+        # Set maximum to slice sliders and reset cursors position
         for i in range(3):
             self.slice_sliders[i].setMaximum(self.image_file.shape[i] - 1)
         # First draw of images
         self.drawAllViewers()
+        # Update masks and points lists
+        self.updatePointsList()
+        self.updateMasksList()
 
     ## @brief Close image file
     # @details Close image file then disable most of UI elements and clear viewers.
@@ -208,8 +208,13 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.cycle_nb_label.setText(str(self.cycle) + "/" + str(self.cycle_slider.maximum()))
         if self.min_contrast_slider.minimum() != self.min_contrast_slider.maximum():
             contrast_min_percent = round((self.contrast_min-self.min_contrast_slider.minimum())/(self.min_contrast_slider.maximum()-self.min_contrast_slider.minimum())*100, 2)
+        else:
+            contrast_min_percent = 0
+        if self.max_contrast_slider.minimum() != self.max_contrast_slider.maximum():
             contrast_max_percent = round((self.contrast_max-self.max_contrast_slider.minimum())/(self.max_contrast_slider.maximum()-self.max_contrast_slider.minimum())*100, 2)
-            self.contrast_nb_label.setText(str(contrast_min_percent) + "% | " + str(contrast_max_percent) + "%")
+        else:
+            contrast_max_percent = 0
+        self.contrast_nb_label.setText(str(contrast_min_percent) + "% | " + str(contrast_max_percent) + "%")
         self.slices[num_type], scale = self.image_file.get_slice(self.cycle, num_type, num_slice, self.contrast_min, self.contrast_max, self.color_map)
         pixmap = self.slices[num_type].toqpixmap()
         scene = QGraphicsScene(0, 0, pixmap.width(), pixmap.height())
@@ -291,7 +296,6 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     # @details Save current points and masks into a MIM file. All deleted items are lost.
     def savePointsMasks(self):
         save_path = QFileDialog.getSaveFileName(parent=self, directory=self.lastUsedPath+'/'+self.filename, filter='*.mim')
-        if not os.path.isfile(save_path[0]): return
         self.image_file.save_points_masks(save_path[0])
 
     ## @brief Load points and masks from a MIM file
@@ -303,6 +307,15 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.currentMaskIndex = self.getLastMaskIndex()
         self.updatePointsList()
         self.updateMasksList()
+
+    ## @brief Save selected mask(s) to a NifTI file
+    def saveMaskToNifti(self):
+        # A mask must be selected
+        if self.masks_list.currentItem():
+            if self.masks_list.indexOfTopLevelItem(self.masks_list.currentItem())!=-1:
+                save_path = QFileDialog.getSaveFileName(parent=self, directory=self.lastUsedPath+'/', filter='*.nii')
+                self.image_file.get_mask(self.masks_list.currentIndex().row()).save_mask_to_nifti(save_path[0])
+
 
     ## @brief Allow user to create a new mask
     def newMask(self):

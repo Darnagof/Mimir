@@ -143,6 +143,9 @@ class Ui_MainWindow(object):
         self.saveMasksBt = QtWidgets.QPushButton(self.masksTab)
         self.saveMasksBt.setObjectName("saveMasksBt")
         self.horizontalLayout_5.addWidget(self.saveMasksBt)
+        self.saveMaskNiftiBt = QtWidgets.QPushButton(self.masksTab)
+        self.saveMaskNiftiBt.setObjectName("saveMaskNiftiBt")
+        self.horizontalLayout_5.addWidget(self.saveMaskNiftiBt)
         self.verticalLayout_7.addLayout(self.horizontalLayout_5)
         self.masksList = QtWidgets.QTreeWidget(self.masksTab)
         self.masksList.setColumnCount(2)
@@ -324,7 +327,7 @@ class Ui_MainWindow(object):
         self.menuBar.addAction(self.menuScreenshot.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tabMenu.setCurrentIndex(0)
+        self.tabMenu.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -344,6 +347,7 @@ class Ui_MainWindow(object):
         self.addMaskBt.setText(_translate("MainWindow", "+"))
         self.delMaskBt.setText(_translate("MainWindow", "-"))
         self.saveMasksBt.setText(_translate("MainWindow", "Save"))
+        self.saveMaskNiftiBt.setText(_translate("MainWindow", "Save to Nifti"))
         self.masksList.headerItem().setText(0, _translate("MainWindow", "Mask"))
         self.masksList.headerItem().setText(1, _translate("MainWindow", "Color"))
         self.tabMenu.setTabText(self.tabMenu.indexOf(self.masksTab), _translate("MainWindow", "Masks"))
