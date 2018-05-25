@@ -227,7 +227,7 @@ class Mask:
     ## @brief Save a mask in a nifti file
     # @param save_path Path of the output file
     def save_mask_to_nifti(self, save_path):
-        if self.masks[index].index_freeze != -1:
+        if self.index_freeze != -1:
             new_array = numpy.zeros(self.shape, dtype=numpy.float)
             
             nx, ny = (x for i,x in enumerate(self.shape) if i != self.index_freeze)
