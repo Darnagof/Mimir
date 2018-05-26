@@ -176,7 +176,7 @@ else:
     if(args.all):
         for i in range(args.img_nb if args.img_nb else 0, args.img_nb + 1 if args.img_nb else image_file.shape[3]):
             for j in range(plane_nb if args.plane else 0, plane_nb + 1 if args.plane else 3):
-                if(args.slice_nb and (args.slice_nb < 0 or args.slice_nb > image_file.shape[j])):
+                if(args.slice_nb is not None and (args.slice_nb < 0 or args.slice_nb > image_file.shape[j])):
                     parser.error('argument -s/--slice_nb: invalid choice {} (choose in range 0-{} for {} plane)'.format(args.slice_nb, image_file.shape[j], {0:'SAG', 1:'COR', 2:'AXI'}.get(j)))
                 for k in range(args.slice_nb if args.slice_nb else 0, args.slice_nb + 1 if args.slice_nb else image_file.shape[j]):
                     img, scale = image_file.get_slice(i, j, k, contrast_min, contrast_max, args.cmap)
@@ -184,8 +184,8 @@ else:
                     ensure_dir(path_out)
                     Mimir_lib.save_slice(img, path_out)
     else:
-        if (args.plane and args.slice_nb):
-            if(args.slice_nb and (args.slice_nb < 0 or args.slice_nb > image_file.shape[plane_nb])):
+        if (args.plane and args.slice_nb is not None):
+            if(args.slice_nb is not None and (args.slice_nb < 0 or args.slice_nb > image_file.shape[plane_nb])):
                 parser.error('argument -s/--slice_nb: invalid choice {} (choose in range 0-{} for {} plane)'.format(args.slice_nb, image_file.shape[plane_nb], {0:'SAG', 1:'COR', 2:'AXI'}.get(plane_nb)))
             img, scale = image_file.get_slice(args.img_nb if args.img_nb else 0, plane_nb, args.slice_nb, contrast_min, contrast_max, args.cmap)
             path_out = args.path_out if args.path_out else "{}/{}.png".format(os.path.dirname(args.path_in),os.path.splitext(args.path_in)[0])
