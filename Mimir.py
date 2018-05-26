@@ -19,6 +19,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     def __init__(self, parent=None):
         super(Mimir, self).__init__(parent)
 
+        self.image_file = None
         self.axial_slice = None
         self.sagittal_slice = None
         self.coronal_slice = None
@@ -177,7 +178,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     ## @brief Close image file
     # @details Close image file then disable most of UI elements and clear viewers.
     def closeFile(self):
-        del self.image_file
+        self.image_file = None
         self.enableUi(False)
         self.enableViewers(False)
         self.clearViewers()
@@ -314,6 +315,7 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.currentMaskIndex = self.getLastMaskIndex()
         self.updatePointsList()
         self.updateMasksList()
+        self.drawAllViewers()
 
     ## @brief Save selected mask to a NifTI file
     def saveMaskToNifti(self):
@@ -378,30 +380,32 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
     ## @brief Switch to mask or point mode
     # @param state True = mask mode, False = point mode
     def toMaskMode(self, state: bool):
-        self.maskMode = state
-        if self.maskMode == True:
-            print("Mask mode")
-            self.enableUi(False)
-        else:
-            print("Point mode")
-            self.enableUi(True)
-            self.updateMasksList()
-            self.currentMaskIndex = self.getLastMaskIndex()
+        if self.maskMode != state:
+            self.maskMode = state
+            if self.maskMode == True:
+                print("Mask mode")
+                self.enableUi(False)
+            else:
+                print("Point mode")
+                self.enableUi(True)
+                self.updateMasksList()
+                self.currentMaskIndex = self.getLastMaskIndex()
 
     ## @brief Keyboard commands implementation
     # @param event Event containing the released key
     def keyReleaseEvent(self, event):
-        # Space key : Add point to points or a mask
-        if event.key() == QtCore.Qt.Key_Space:
-            if(self.maskMode):
-                self.image_file.get_mask(self.currentMaskIndex).add_point([self.slice_sliders[0].value(), self.slice_sliders[1].value(), self.slice_sliders[2].value()])
-                print("Add point to mask ", self.currentMaskIndex, ": ", str([self.slice_sliders[0].value(), self.slice_sliders[1].value(), self.slice_sliders[2].value()]))
-                self.drawAllViewers()
-            else:
-                self.add_point(self.current_coords, self.cycle)
-        # Escape key : Quit mask mode
-        if event.key() == QtCore.Qt.Key_Escape:
-            self.toMaskMode(False)
+        if self.image_file:
+            # Space key : Add point to points or a mask
+            if event.key() == QtCore.Qt.Key_Space:
+                if(self.maskMode):
+                    self.image_file.get_mask(self.currentMaskIndex).add_point([self.slice_sliders[0].value(), self.slice_sliders[1].value(), self.slice_sliders[2].value()])
+                    print("Add point to mask ", self.currentMaskIndex, ": ", str([self.slice_sliders[0].value(), self.slice_sliders[1].value(), self.slice_sliders[2].value()]))
+                    self.drawAllViewers()
+                else:
+                    self.add_point(self.current_coords, self.cycle)
+            # Escape key : Quit mask mode
+            if event.key() == QtCore.Qt.Key_Escape:
+                self.toMaskMode(False)
 
 def main():
     app = QApplication(sys.argv)
