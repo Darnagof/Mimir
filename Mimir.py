@@ -181,6 +181,10 @@ class Mimir(QMainWindow, mimir_ui.Ui_MainWindow):
         self.enableUi(False)
         self.enableViewers(False)
         self.clearViewers()
+        # Clear points list
+        self.points_model.removeRows(0, self.points_model.rowCount())
+        # Clear masks list
+        self.masks_list.clear()
 
     ## @brief Save a slice as image file.
     # @details Save the current showed slice from a chosen view as image file (PNG).
