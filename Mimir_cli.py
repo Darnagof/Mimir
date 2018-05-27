@@ -58,118 +58,119 @@ if(args.edit):
     edit_point = True
     last_index = len(image_file.masks) - 1
     actual_index = 0
-    while(input_value[0] != "save" and input_value[0] != "exit"):
+    while(len(input_value) == 0 or (input_value[0] != "save" and input_value[0] != "exit")):
         input_value = input("{}> ".format("point" if edit_point else "mask {}".format(actual_index))).split()
         #SAVE
-        if(input_value[0] == "save"):
-            path_out = args.path_out if args.path_out else "{}/{}.mim".format(os.path.dirname(args.path_in),os.path.splitext(args.path_in)[0])
-            ensure_dir(path_out)
-            image_file.save_points_masks(path_out)
-            print("Masks and points saved in {}".format(path_out))
-        #SAVE MASK TO NIFTI
-        elif(input_value[0] == "nifti" and len(input_value) == 2):
-            if(is_int(input_value[1]) and int(input_value[1]) < len(image_file.masks) and int(input_value[1]) >= 0):
-                path_out = "{}/{}_mask_{}.nii".format((os.path.dirname(args.path_out) if args.path_out else os.path.dirname(args.path_in)),os.path.splitext(args.path_in)[0],input_value[1])
+        if(len(input_value) >= 1):
+            if(input_value[0] == "save"):
+                path_out = args.path_out if args.path_out else "{}/{}.mim".format(os.path.dirname(args.path_in),os.path.splitext(args.path_in)[0])
                 ensure_dir(path_out)
-                image_file.get_mask(int(input_value[1])).save_mask_to_nifti(path_out)
-            elif(input_value[1] == "all"):
-                for k,mask in enumerate(image_file.masks):
-                    path_out = "{}/{}_mask_{}.nii".format((os.path.dirname(args.path_out) if args.path_out else os.path.dirname(args.path_in)),os.path.splitext(args.path_in)[0],k)
+                image_file.save_points_masks(path_out)
+                print("Masks and points saved in {}".format(path_out))
+            #SAVE MASK TO NIFTI
+            elif(input_value[0] == "nifti" and len(input_value) == 2):
+                if(is_int(input_value[1]) and int(input_value[1]) < len(image_file.masks) and int(input_value[1]) >= 0):
+                    path_out = "{}/{}_mask_{}.nii".format((os.path.dirname(args.path_out) if args.path_out else os.path.dirname(args.path_in)),os.path.splitext(args.path_in)[0],input_value[1])
                     ensure_dir(path_out)
-                    mask.save_mask_to_nifti(path_out)
-        #CHANGE TO MASK MODE
-        elif(input_value[0] == "mask" or input_value[0] == "m" or input_value[0] == "masks"):
-            edit_point = False
-            if len(input_value) == 1:
-                last_index += 1
-                actual_index = last_index
-            elif(is_int(input_value[1])):
-                actual_index = int(input_value[1])
-        #CHANGE TO POINT MODE
-        elif(input_value[0] == "point" or input_value[0] == "p" or input_value[0] == "points"):
-            edit_point = True
-        #DELETION
-        elif(input_value[0] == "del" or input_value[0] == "d" or input_value == "delete"):
-            if(is_int(input_value[1])):
-                if(edit_point): #POINT MODE
-                    image_file.delete_point(int(input_value[1]))
-                else: #MASK MODE
-                    image_file.get_mask(actual_index).delete_point(int(input_value[1]))
-                print("Point {} deleted".format(input_value[1]))
-            elif(input_value[1] == "mask" and is_int(input_value[2])):
-                image_file.delete_mask(int(input_value[2]))
-                print("Mask {} deleted".format(input_value[2]))
-        #COLOR CHANGE
-        elif(input_value[0] == "col" or input_value[0] == "c" or input_value[0] == "color"):
-            if(edit_point and is_int(input_value[1])): #POINT MODE
-                color = []
-                if(len(input_value[2:]) == 4):
-                    for v in input_value[2:]:
-                        if(is_int(v) and int(v) < 256 and int(v) >= 0):
-                            color.append(int(v))
+                    image_file.get_mask(int(input_value[1])).save_mask_to_nifti(path_out)
+                elif(input_value[1] == "all"):
+                    for k,mask in enumerate(image_file.masks):
+                        path_out = "{}/{}_mask_{}.nii".format((os.path.dirname(args.path_out) if args.path_out else os.path.dirname(args.path_in)),os.path.splitext(args.path_in)[0],k)
+                        ensure_dir(path_out)
+                        mask.save_mask_to_nifti(path_out)
+            #CHANGE TO MASK MODE
+            elif(input_value[0] == "mask" or input_value[0] == "m" or input_value[0] == "masks"):
+                edit_point = False
+                if len(input_value) == 1:
+                    last_index += 1
+                    actual_index = last_index
+                elif(is_int(input_value[1])):
+                    actual_index = int(input_value[1])
+            #CHANGE TO POINT MODE
+            elif(input_value[0] == "point" or input_value[0] == "p" or input_value[0] == "points"):
+                edit_point = True
+            #DELETION
+            elif(input_value[0] == "del" or input_value[0] == "d" or input_value == "delete"):
+                if(is_int(input_value[1])):
+                    if(edit_point): #POINT MODE
+                        image_file.delete_point(int(input_value[1]))
+                    else: #MASK MODE
+                        image_file.get_mask(actual_index).delete_point(int(input_value[1]))
+                    print("Point {} deleted".format(input_value[1]))
+                elif(input_value[1] == "mask" and is_int(input_value[2])):
+                    image_file.delete_mask(int(input_value[2]))
+                    print("Mask {} deleted".format(input_value[2]))
+            #COLOR CHANGE
+            elif(input_value[0] == "col" or input_value[0] == "c" or input_value[0] == "color"):
+                if(edit_point and is_int(input_value[1])): #POINT MODE
+                    color = []
+                    if(len(input_value[2:]) == 4):
+                        for v in input_value[2:]:
+                            if(is_int(v) and int(v) < 256 and int(v) >= 0):
+                                color.append(int(v))
+                            else:
+                                print("Color must be number in range (0-255).")
+                        if(len(color) == 4):
+                            image_file.set_color_point(int(input_value[1]), color)
+                            print("Point {} set to color {}".format(input_value[1], input_value[2:]))
                         else:
                             print("Color must be number in range (0-255).")
-                    if(len(color) == 4):
-                        image_file.set_color_point(int(input_value[1]), color)
-                        print("Point {} set to color {}".format(input_value[1], input_value[2:]))
                     else:
-                        print("Color must be number in range (0-255).")
-                else:
-                    print("Color must be R G B A.")
-            else: #MASK MODE
-                color = []
-                if(len(input_value[1:]) == 4):
-                    for v in input_value[1:]:
-                        if(is_int(v)):
-                            color.append(int(v))
-                    if(len(color) == 4):
-                        image_file.get_mask(actual_index).set_color(color)
-                        print("Mask set to color {}".format(input_value[1:]))
-        #DATA PRINT
-        elif(input_value[0] == "data"):
-            print("Points :")
-            for i,point in enumerate(image_file.points):
-                print("\t",i,point[:4],"color : ",point[4:])
-            print("________\nMasks:")
-            for i,mask in enumerate(image_file.masks):
-                print("\t",i)
-                for j,point in enumerate(mask.points):
-                    print("\t\t",j,point)
-        #HELP
-        elif(input_value[0] == "help" or input_value[0] == "h" or input_value[0] == "?"):
-            print("  save : \n\t\tSave the mim file to the output file provided or to the default output file ({}).".format("{}/{}.mim".format(os.path.dirname(args.path_in),os.path.splitext(args.path_in)[0])))
-            print("  nifti index|all: \n\t\tSave the mask at the index (or all masks if \"all\" is specified) to a nifti file.")
-            print("  m|mask|masks [index] : \n\t\tEdit new mask or specific mask if index provided.")
-            print("  p|point|points : \n\t\tEdit points.")
-            print("  d|del|delete [mask] index : \n\t\tDelete point at index (from data if in point mode, from mask if in mask mode) or mask if specified \"mask\".")
-            print("  c|col|color [index] R G B A : \n\t\tSet point at index to color (R,G,B,A) if in point mode, set mask to color if in mask mode.")
-            print("  data : \n\t\tPrint all masks and points.")
-            print("  ?|h|help : \n\t\tPrint this help.")
-            print("  SAG COR AXI [T] [R G B A] : \n\t\tAdd point (4D) and color to data if in point mode, add point (3D) if in mask mode.")
-            print("  exit : \n\t\tExit (Be careful, it won't save automatically)")
-        #POINT ADDITION
-        elif(input_value[0] != "exit"):
-            if(edit_point): #POINT MODE
-                point = []
-                if(len(input_value) == 4 or len(input_value) == 8):
-                    for v in input_value:
-                        if(is_int(v)):
-                            point.append(int(v))
-                    if(len(point) == 4 or len(point) == 8):
-                        image_file.add_point(point[:4], point[4:])
-                        print("Point {} added".format(point[:4]), "with color {}".format(point[4:]) if point[4:] else "")
-            else: #MASK MODE
-                point = []
-                if(len(input_value) == 3):
-                    for v in input_value:
-                        if(is_int(v)):
-                            point.append(int(v))
-                    if(len(point) == 3):
-                        err = image_file.get_mask(actual_index).add_point(point)
-                        if err:
-                            print("Point {} not in mask's plan".format(point))
-                        else:
-                            print("Point {} added".format(point))
+                        print("Color must be R G B A.")
+                else: #MASK MODE
+                    color = []
+                    if(len(input_value[1:]) == 4):
+                        for v in input_value[1:]:
+                            if(is_int(v)):
+                                color.append(int(v))
+                        if(len(color) == 4):
+                            image_file.get_mask(actual_index).set_color(color)
+                            print("Mask set to color {}".format(input_value[1:]))
+            #DATA PRINT
+            elif(input_value[0] == "data"):
+                print("Points :")
+                for i,point in enumerate(image_file.points):
+                    print("\t",i,point[:4],"color : ",point[4:])
+                print("________\nMasks:")
+                for i,mask in enumerate(image_file.masks):
+                    print("\t",i)
+                    for j,point in enumerate(mask.points):
+                        print("\t\t",j,point)
+            #HELP
+            elif(input_value[0] == "help" or input_value[0] == "h" or input_value[0] == "?"):
+                print("  save : \n\t\tSave the mim file to the output file provided or to the default output file ({}).".format("{}/{}.mim".format(os.path.dirname(args.path_in),os.path.splitext(args.path_in)[0])))
+                print("  nifti index|all: \n\t\tSave the mask at the index (or all masks if \"all\" is specified) to a nifti file.")
+                print("  m|mask|masks [index] : \n\t\tEdit new mask or specific mask if index provided.")
+                print("  p|point|points : \n\t\tEdit points.")
+                print("  d|del|delete [mask] index : \n\t\tDelete point at index (from data if in point mode, from mask if in mask mode) or mask if specified \"mask\".")
+                print("  c|col|color [index] R G B A : \n\t\tSet point at index to color (R,G,B,A) if in point mode, set mask to color if in mask mode.")
+                print("  data : \n\t\tPrint all masks and points.")
+                print("  ?|h|help : \n\t\tPrint this help.")
+                print("  SAG COR AXI [T] [R G B A] : \n\t\tAdd point (4D) and color to data if in point mode, add point (3D) if in mask mode.")
+                print("  exit : \n\t\tExit (Be careful, it won't save automatically)")
+            #POINT ADDITION
+            elif(input_value[0] != "exit"):
+                if(edit_point): #POINT MODE
+                    point = []
+                    if(len(input_value) == 4 or len(input_value) == 8):
+                        for v in input_value:
+                            if(is_int(v)):
+                                point.append(int(v))
+                        if(len(point) == 4 or len(point) == 8):
+                            image_file.add_point(point[:4], point[4:])
+                            print("Point {} added".format(point[:4]), "with color {}".format(point[4:]) if point[4:] else "")
+                else: #MASK MODE
+                    point = []
+                    if(len(input_value) == 3):
+                        for v in input_value:
+                            if(is_int(v)):
+                                point.append(int(v))
+                        if(len(point) == 3):
+                            err = image_file.get_mask(actual_index).add_point(point)
+                            if err:
+                                print("Point {} not in mask's plan".format(point))
+                            else:
+                                print("Point {} added".format(point))
 #SLICE RECUPERATION MODE
 else:
     #Save every slices corresponding to the given options

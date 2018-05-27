@@ -242,9 +242,6 @@ class Mask:
             path = Path(poly_verts)
             grid = path.contains_points(new_points)
             grid = grid.reshape((ny,nx))
-            print(len(grid),len(grid[0]))
-            print(len(new_array), len(new_array[0]), len(new_array[0][0]))
-            print(self.index_freeze, self.value_freeze)
             for k,v in enumerate(new_array):
                 for k2,v2 in enumerate(v):
                     for k3,v3 in enumerate(v2):
