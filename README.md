@@ -5,7 +5,7 @@ Mímir is a Nifti files viewer, capable of processing those files in differents 
 ## Installation
 
 ### Requirements
-* Python 3.6 and up
+* Python 3.4 and up
 
 
 ```
@@ -17,6 +17,12 @@ $ cd Mimir
 
 # Install dependencies
 $ pip install -r ./requirement.txt
+```
+
+If you are on Linux (Ubuntu), you need to enter these additional commands
+```
+$ apt-get install python3-pyqt5
+$ apt-get install python3-tk
 ```
 
 ## Key features
